@@ -150,20 +150,21 @@ code {
 		padding: @paddingy 10px @paddingy 25px;
 		&:hover {
 			padding: @paddingy 25px @paddingy 35px;
+			&::after {
+				border-left-width: 16px;
+			}
 		}
-	}
-	div {
-		position: absolute;
-		top: 1px;
-		right: -4px;
-		width: 0;
-		height: 0;
-		transition: all 0.5s;
-		border: solid 8px transparent;
-		border-left: solid 0 #666;
-	}
-	a:hover ~ div {
-		border-left-width: 16px;
+		&::after {
+			content: "";
+			position: absolute;
+			top: 6px;
+			right: -4px;
+			width: 0;
+			height: 0;
+			transition: all 0.5s;
+			border: solid 8px transparent;
+			border-left: solid 0 #666;
+		}
 	}
 }
 
