@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, user-scalable=no" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+
+		<title>flight game</title>
+	</head>
+	<body>
+		<p id="loading">loading...</p>
+		<canvas id="game"></canvas>
+		<script src="./libs/phina.min.js"></script>
+		<script src="./libs/three.min.js"></script>
+		<script src="./js/flygame.min.js"></script>
+		<script>
+		window.onload = function() {
+			var loading = document.getElementById("loading");
+			loading.parentNode.removeChild(loading);
+		}
+		</script>
+	</body>
+</html>

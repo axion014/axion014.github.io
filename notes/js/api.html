@@ -1,0 +1,50 @@
+<html>
+	<head>
+		<meta charset="UTF-8" />
+
+		<title>ECMAscript usable API - Code crystal</title>
+		<meta name="viewport" content="width=device-width, maximum-scale=1.0, minimum-scale=0.5,user-scalable=yes,initial-scale=1.0" />
+		<link rel="stylesheet" href="/style/style.css">
+	</head>
+	<body>
+		<header>
+			<a href="#">Code crystal</a>
+			<p>ぼちぼち技術開発　主にjs,java等</p>
+		</header>
+		<hr>
+		<h2 class="center">note of - ECMAscript usable API</h2>
+		<ul class="center">
+			<li>
+				<h3>Function.prototype.bind</h3>
+				<p>このようなコードを実行してみて下さい。
+					<br>
+					<code lang="js">var Example = function() {
+	this.s = "hoge";
+	this.object = {
+		func: function() {
+			console.log(this.s);
+		};
+	};
+}
+new Example().object.func();</code>
+					<br>
+					残念ながら、これでは"hoge"は出力されません。nullが出力されてしまいます。なぜでしょうか。
+				</p>
+				<p>"this.s"を"this"に置き換えてみると、その理由は良くわかります。func内でのthisはExampleオブジェクトではなく、代わりにその中のobjectプロパティーを指しています。</p>
+				<p>ここでbindの出番です。関数宣言の後に".bind(this)"を付け足してみます。<br>
+					<code lang="js">var Example = function() {
+	this.s = "hoge";
+	this.object = {
+		func: function() {
+			console.log(this.s);
+		}.bind(this);
+	};
+}
+new Example().object.func();</code>
+				<br>
+				これを実行してみると、func内でのthisはExampleオブジェクトになり、"hoge"が出力されます。なぜこうなったのでしょうか。まず、何かしらの関数のbindメソッドを引数1つで実行すると、新しい別の関数が返って来ます。その関数の中では、thisは必ずbindメソッドの第1引数になります。
+				</p>
+			</li>
+		</ul>
+	</body>
+</html>
