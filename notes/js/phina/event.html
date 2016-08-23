@@ -1,0 +1,130 @@
+<html>
+	<head>
+		<meta charset="UTF-8" />
+
+		<title>イベント(phina.util.EventDispatcher)の使い方 - Code crystal</title>
+		<meta name="viewport" content="width=device-width, maximum-scale=1.0, minimum-scale=0.5,user-scalable=yes,initial-scale=1.0" />
+		<link rel="stylesheet" href="/style/style.css">
+	</head>
+	<body>
+		<header>
+			<a href="/">Code crystal</a>
+			<p>ぼちぼち技術開発　主にjs,java等</p>
+		</header>
+		<hr>
+		<h3 class="center">イベント(phina.util.EventDispatcher)の使い方</h3>
+		<div class="center">phina.jsのほとんどのクラスはEventDispatcherを継承しています。そして、そのEventDispatcherには以下のメソッドが定義されています。
+			<div class="min">メソッド名(別名)で列挙:</div>
+			<ul class="left">
+				<li>on(addEventListener)
+				<li>off(removeEventListener)
+				<li>one(別名なし)
+				<li>fire(dispatchEvent)
+				<li>flare(dispatchEventByType)
+				<li>has(hasEventListener)
+				<li>clear(clearEventListener)
+			</ul><br>
+			順に説明していきます。
+			<ul>
+				<li>
+					<h4>on, flare</h4>
+					イベントとは、あらかじめ特定の名前といくつかの関数(イベントリスナと呼ぶ)を関連付けておき、後に何らかのタイミングでその名前に関連付けられた全ての関数をまとめて実行する機能です。任意のオブジェクトを引数に渡すことも出来ます。そのために使うのがonメソッドとflareメソッドです。基本的な使い方としては、
+					<br>
+					<code lang="js">var object = phina.util.EventDispatcher();
+
+object.on("hello", function(e) {
+	console.log("Hello," + (e.name || "World") + "!");
+});
+
+object.flare("hello", {name: "axion014"}); // Hello, axion014!</code>
+					<br>
+					のようになります。まず、onメソッドはobjectの中で渡された第一引数の文字列と第二引数の関数を関連付け(イベントリスナを定義)ます。そしてflareメソッドは、objectの中から、渡された第一引数の文字列と関連付けられた全ての関数を順番に実行(イベントを発火)します。その関数には、第二引数のオブジェクトが渡されます。その結果、このサンプルでは "Hello, axion014!" が出力されます。このサンプル内のonメソッドは「helloイベントに対応するイベントリスナを定義」、flareメソッドは「helloイベントを発火」しています。
+				</li>
+				<li>
+					<h4>off</h4>
+					offメソッドは、onメソッドの丁度逆の働きをします。あるオブジェクトのonメソッドを実行した後、全く同じ引数でそのオブジェクトのoffメソッドを実行すると、onメソッドによる関連付けは取り消されます。すなわち、offメソッドはイベントリスナを削除します。
+					<br>
+					<code lang="js">var object = phina.util.EventDispatcher();
+
+var func = function(e) {
+	console.log("Hello," + (e.name || "World") + "!");
+};
+
+object.on("hello", func);
+object.off("hello", func);
+
+object.flare("hello", {name: "axion014"});</code>
+					<br>
+					このコードは、実行しても何も出力されません。文字列 "hello" と関数funcの関連付けはoffメソッドによって取り消されたからです。
+				</li>
+				<li>
+					<h4>one</h4>
+					oneメソッドは、onメソッドと同じようにイベントリスナを定義します。しかし、flareメソッドや後述のfireメソッドによって一度関数が実行されると、そのイベントリスナは削除されます。その結果、関数は最初の一度だけ実行されます。
+					<br>
+					<code lang="js">var object = phina.util.EventDispatcher();
+
+object.one("hello", function(e) {
+	console.log("Hello," + (e.name || "World") + "!");
+});
+
+object.flare("hello", {name: "axion014"}); // Hello, axion014!
+object.flare("hello", {name: "axion014"});</code>
+					<br>
+					このコードを実行すると、 "Hello, axion014!" が一度だけ出力されます。二度は出力されません。このコードは、
+					<br>
+					<code lang="js">var object = phina.util.EventDispatcher();
+
+var func = function(e) {
+	console.log("Hello," + (e.name || "World") + "!");
+	object.off("hello", func);
+};
+object.on("hello", func);
+
+object.flare("hello", {name: "axion014"}); // Hello, axion014!
+object.flare("hello", {name: "axion014"});</code>
+					<br>
+					と同等です。
+				</li>
+				<li>
+					<h4>fire</h4>
+					fireメソッドは、flareメソッドと同様にイベントリスナを実行します。ただし、flareメソッドで第二引数に指定していたオブジェクトを第一引数に指定し、第一引数に指定していた文字列を第二引数のtypeプロパティーに指定することが異なります。flareメソッドは、内部でfireメソッドを呼び出しています。
+					<br>
+					<code lang="js">object.flare("something", {s: "hoge"});</code>
+					<br>
+					<code lang="js">object.fire({type: "something", s: "hoge"});</code>
+					<br>
+					この二つのコードは同等です。
+				</li>
+				<li>
+					<h4>has</h4>
+					hasメソッドは、第一引数に渡された文字列に対応するイベントリスナがこのオブジェクトに含まれているかをboolean型で返します。
+					<br>
+					<code lang="js">var object = phina.util.EventDispatcher();
+object.on("something", function() {});
+console.log(object.has("something"));</code>
+					<br>
+					このコードはtrueを、
+					<br>
+					<code lang="js">var object = phina.util.EventDispatcher();
+console.log(object.has("something"));</code>
+					<br>
+					このコードはfalseを出力します。
+				</li>
+				<li>
+					<h4>clear</h4>
+					clearメソッドは、第一引数に渡された文字列に対応するイベントリスナを全てまとめて削除します。
+					<br>
+					<code lang="js">var object = phina.util.EventDispatcher();
+object.on("something", function() {});
+object.on("something", function() {});
+object.clear("something");
+console.log(object.has("something"));</code>
+					<br>
+					このコードを実行すると、falseが出力されます。
+				</li>
+			</ul><br>
+		</div>
+		<hr>
+		<h4 class="center">last modified: 2016/8/23</h4>
+	</body>
+</html>

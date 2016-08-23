@@ -1,0 +1,34 @@
+<html>
+	<head>
+		<meta charset="UTF-8" />
+
+		<title>一体phina.namespaceとは何なのか? - Code crystal</title>
+		<meta name="viewport" content="width=device-width, maximum-scale=1.0, minimum-scale=0.5,user-scalable=yes,initial-scale=1.0" />
+		<link rel="stylesheet" href="/style/style.css">
+	</head>
+	<body>
+		<header>
+			<a href="/">Code crystal</a>
+			<p>ぼちぼち技術開発　主にjs,java等</p>
+		</header>
+		<hr>
+		<h3 class="center">一体phina.namespaceとは何なのか?</h3>
+		<div class="center">
+			実は大したものではありません。
+			<br>
+			<code lang="js">phina.namespace(function() {
+	var x = 0;
+});</code>
+			<br>
+			は、
+			<br>
+			<code lang="js">(function() {
+	var x = 0;
+})();</code>
+			<br>
+			の単なる代わりです。どちらもまったく同じ動作(つまりvarによる変数宣言のスコープの役割)をします。
+		</div>
+		<hr>
+		<h4 class="center">last modified: 2016/8/20</h4>
+	</body>
+</html>
