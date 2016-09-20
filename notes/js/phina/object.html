@@ -30,9 +30,9 @@
 			<br>
 			2行目が肝です。変数instanceに
 			<code>new _class.prototype._creator()</code>
-			を代入しています。これが全てのphina.jsのオブジェクトの元です。ただ、この特性上、Chromeのデバッガなどではphina.jsのオブジェクトの型はすべて
+			を代入しています。これが全てのphina.jsのオブジェクトの元です。ただ、この特性上、Chromeのデバッガなどではphina.jsのオブジェクトの型は全て
 			<code>"_class._creator"</code>
-			と表示されてしまいます。その代わりとして、phina.jsのオブジェクトは全てclassNameプロパティーを持っています。このプロパティーの値を見ることで、そのオブジェクトの型が分かります。
+			と表示されてしまいます。その代わりに、phina.jsのオブジェクトは皆classNameプロパティーを持っています。このプロパティーの値を見ることで、そのオブジェクトの型が分かります。
 		</div>
 		<h3 class="center">phina.jsのObject.prototype拡張</h3>
 		<div class="center">
@@ -49,6 +49,7 @@
 				<li>
 					<h4>getter/setter/accessor</h4>
 					これらのメソッドは、ゲッターやセッターを定義するためのメソッドです。これらのコードは、definePropertyメソッドの短縮形です。
+					<br>
 					<code class="box" lang="js">object.getter('x', function() {return this._x;);
 
 object.setter('y', function(y) {this._y = y;});
@@ -86,7 +87,7 @@ Object.defineProperty(object, 'z', {
 };
 
 object.forIn(function(key, value, index) {
-	console.log(this + "." + key ": " + value + "(" + index + ")");
+	console.log(this+"."+key+": "+value+"("+index+")");
 });</code>
 					<br>
 					このコードを実行した時の出力は、

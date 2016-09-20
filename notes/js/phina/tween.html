@@ -24,11 +24,13 @@
 			<br>
 			というようなパターンをとります。このコードは、phinaobjのプロパティーxを1秒かけて200に変化させ、それからプロパティーyを0.4秒で150にします。ただし、この方法では2つのアニメーションは順番に適用され、同時にはできません。複数のアニメーションをいっぺんに再生するには、phinaobjに複数のtweenerを関連付けなければなりません。そのためには、新しくTweenerのオブジェクトを生成し、そのattachToメソッドで以下のように関連付けます(tweener2は任意の変数、ここでは新しくphinaobjのプロパティーを作って代入している)。
 			<br>
-			<code class="box" lang="js">phinaobj.tweener2 = phina.accessory.Tweener().attachTo(phinaobj);</code>
+			<code class="box" lang="js">phinaobj.tweener2 = phina.accessory.Tweener()
+	.attachTo(phinaobj);</code>
 			<br>
 			後は、2つあるtweenerに対してそれぞれアニメーションを指定すれば、目的のアニメーションが実現できます。最終的なコードは以下の通りです。
 			<br>
-			<code class="box" lang="js">phinaobj.tweener2 = phina.accessory.Tweener().attachTo(phinaobj);
+			<code class="box" lang="js">phinaobj.tweener2 = phina.accessory.Tweener()
+	.attachTo(phinaobj);
 
 phinaobj.tweener.to({x: 200}, 1000);
 phinaobj.tweener2.to({y: 150}, 400, 'swing');</code>

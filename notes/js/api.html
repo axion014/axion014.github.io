@@ -18,7 +18,7 @@
 				<h3>Function.prototype.bind</h3>
 				<p>このようなコードを実行してみて下さい。
 					<br>
-					<code lang="js">var Example = function() {
+					<code class="box" lang="js">var Example = function() {
 	this.s = "hoge";
 	this.object = {
 		func: function() {
@@ -31,8 +31,11 @@ new Example().object.func();</code>
 					残念ながら、これでは"hoge"は出力されません。nullが出力されてしまいます。なぜでしょうか。
 				</p>
 				<p>"this.s"を"this"に置き換えてみると、その理由は良くわかります。func内でのthisはExampleオブジェクトではなく、代わりにその中のobjectプロパティーを指しています。</p>
-				<p>ここでbindの出番です。関数宣言の後に".bind(this)"を付け足してみます。<br>
-					<code lang="js">var Example = function() {
+				<p>ここでbindの出番です。関数宣言の後に
+				<code>".bind(this)"</code>
+				を付け足してみます。
+				<br>
+				<code class="box" lang="js">var Example = function() {
 	this.s = "hoge";
 	this.object = {
 		func: function() {
@@ -42,11 +45,11 @@ new Example().object.func();</code>
 }
 new Example().object.func();</code>
 				<br>
-				これを実行してみると、func内でのthisはExampleオブジェクトになり、"hoge"が出力されます。なぜこうなったのでしょうか。まず、何かしらの関数のbindメソッドを引数1つで実行すると、新しい別の関数が返って来ます。その関数の中では、thisは必ずbindメソッドの第1引数になります。
+				これを実行してみると、"hoge"が出力されます。なぜこうなったのでしょうか。まず、何かしらの関数のbindメソッドを引数1つで実行すると、新しい別の関数が返って来ます。その関数の中では、thisは必ずbindメソッドの第1引数になります。そのため、func内でのthisはExampleオブジェクトになったのです。
 				</p>
 			</li>
 		</ul>
 		<hr>
-		<h4 class="center">last modified: 2016/8/23</h4>
+		<h4 class="center">last modified: 2016/9/21</h4>
 	</body>
 </html>

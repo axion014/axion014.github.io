@@ -10,7 +10,9 @@
 body {
 	color: @textcolor;
   background-color: hsl(0, 0%, 100%);
-	font-family: 'Lucida Grande','Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+	font-family: "Open Sans",'Lucida Grande','Hiragino Kaku Gothic ProN', Meiryo UI, sans-serif;
+	-webkit-font-smoothing: antialiased;
+  font-smoothing: antialiased;
 	margin: @bordermarginy 0;
 }
 
@@ -34,7 +36,7 @@ ul {
 		left: 5px;
 	}
 	li {
-		& *:first-child:before {
+		& > *:first-child:before {
 			display: inline-block;
 			content: '';
 			position: relative;
