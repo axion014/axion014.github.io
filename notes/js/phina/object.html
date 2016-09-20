@@ -15,22 +15,24 @@
 		<h3 class="center">phina.jsのオブジェクトについて</h3>
 		<div class="center">
 			phina.jsのオブジェクトは、new構文を使わずに生成することができます。
-			<code lang="js">new Hoge();</code>
+			<code>new Hoge();</code>
 			などといったコードを書かずとも、単に
-			<code lang="js">Hoge();</code>
+			<code>Hoge();</code>
 			とするだけでオブジェクトを作ることが出来るのです。これは、関数Hogeが内部で
-			<code lang="js">new Hoge();</code>
+			<code>new Hoge();</code>
 			のようなものを呼び出しているからに他なりません。phina.jsのソースコードを見ると、以下のような場所があります。
 			<br>
-			<code lang="js">var _class = function() {
+			<code class="box" lang="js">var _class = function() {
 	var instance = new _class.prototype._creator();
 	_class.prototype.init.apply(instance, arguments);
 	return instance;
 };</code>
 			<br>
 			2行目が肝です。変数instanceに
-			<code lang="js">new _class.prototype._creator()</code>
-			を代入しています。これが全てのphina.jsのオブジェクトの元です。ただ、この特性上、Chromeのデバッガなどではphina.jsのオブジェクトの型はすべて "_creator" と表示されてしまいます。その代わりとして、phina.jsのオブジェクトは全てclassNameプロパティーを持っています。このプロパティーの値を見ることで、そのオブジェクトの型が分かります。
+			<code>new _class.prototype._creator()</code>
+			を代入しています。これが全てのphina.jsのオブジェクトの元です。ただ、この特性上、Chromeのデバッガなどではphina.jsのオブジェクトの型はすべて
+			<code>"_class._creator"</code>
+			と表示されてしまいます。その代わりとして、phina.jsのオブジェクトは全てclassNameプロパティーを持っています。このプロパティーの値を見ることで、そのオブジェクトの型が分かります。
 		</div>
 		<h3 class="center">phina.jsのObject.prototype拡張</h3>
 		<div class="center">
@@ -39,29 +41,33 @@
 				<li>
 					<h4>$method</h4>
 					$methodは、自らに指定した名前のメソッドを追加するためのメソッドです。
-					<code lang="js">object.$method('accept', function() {});</code>
+					<code>object.$method('accept', function() {});</code>
 					というコードは、ほとんど
-					<code lang="js">object.accept = function() {};</code>
+					<code>object.accept = function() {};</code>
 					というコードと同等ですが、下記のforInなどでアクセスできない所が異なります。
 				</li>
 				<li>
 					<h4>getter/setter/accessor</h4>
 					これらのメソッドは、ゲッターやセッターを定義するためのメソッドです。これらのコードは、definePropertyメソッドの短縮形です。
-					<code lang="js">object.getter('x', function() {return this._x;);
+					<code class="box" lang="js">object.getter('x', function() {return this._x;);
+
 object.setter('y', function(y) {this._y = y;});
+
 object.accessor('z', {
 	get: function() {return this._z;},
 	set: function(z) {this._z = z;}
 });</code>
 					<br>
-					<code lang="js">Object.defineProperty(object, 'x', {
+					<code class="box" lang="js">Object.defineProperty(object, 'x', {
 	get: function () {return this._x;},
 	enumerable: false
 });
+
 Object.defineProperty(object, 'y', {
 	set: function (y) {this._y = y;},
 	enumerable: false
 });
+
 Object.defineProperty(object, 'z', {
 	get: function () {return this._z;},
 	set: function (z) {this._z = z;},
@@ -74,7 +80,7 @@ Object.defineProperty(object, 'z', {
 					<h4>forIn</h4>
 					forInメソッドは、自らが持つ全てのenumerableなプロパティー(通常のプロパティーは全てenumerable)をループ処理します。第一引数に渡した関数は、第二引数(無ければ自らのオブジェクト)をthisとして、現在処理しているプロパティーの名前、値、インデックスを渡して実行されます。
 					<br>
-					<code lang="js">var object = {
+					<code class="box" lang="js">var object = {
 	a: "foo",
 	b: "bar"
 };
@@ -85,7 +91,7 @@ object.forIn(function(key, value, index) {
 					<br>
 					このコードを実行した時の出力は、
 					<br>
-					<code>[object Object].a: foo(0)
+					<code class="block">[object Object].a: foo(0)
 [object Object].b: bar(1)</code>
 					<br>
 					となります。
@@ -94,13 +100,15 @@ object.forIn(function(key, value, index) {
 					<h4>$extend/$safe</h4>
 					これらのメソッドは、自らのオブジェクトに渡されたオブジェクトを合成します。重複するプロパティーがあったとき、$extendは渡されたオブジェクトのプロパティーを、$safeは自らのプロパティーを優先します。
 					<br>
-					<code lang="js">var object = {a: "foo", b: "bar"};
+					<code class="box" lang="js">var object = {a: "foo", b: "bar"};
+
 object.$extend({b: "foo", c: "bar"}));
 // object === {a: "foo", b: "foo", c: "bar"}</code>
 					<br>
 					このサンプルを実行すると、 object.b は "foo" になります。元々 "bar" で初期化された変数bは、$extendメソッドによって上書きされるからです。
 					<br>
-					<code lang="js">var object = {a: "foo", b: "bar"};
+					<code class="box" lang="js">var object = {a: "foo", b: "bar"};
+
 object.$safe({b: "foo", c: "bar"}));
 // object === {a: "foo", b: "bar", c: "bar"}</code>
 					<br>

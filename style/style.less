@@ -1,5 +1,6 @@
 @textcolor: #000;
 @linkcolor: #444;
+@externallink: #336;
 @bordermarginy: 24px;
 @footercolor: #ccc;
 
@@ -16,26 +17,39 @@ body {
 a {
 	color: @linkcolor;
 	text-decoration: none;
-}
-
-li {
-	list-style-position: inside;
+	&.external {
+		color: @externallink;
+	}
 }
 
 ul {
 	padding-left: 0;
+	list-style: none;
+	&.left {
+		display: inline-flex;
+		flex-direction: column;
+		text-align: left;
+		list-style: disc;
+		position: relative;
+		left: 5px;
+	}
+	li {
+		& *:first-child:before {
+			display: inline-block;
+			content: '';
+			position: relative;
+			right: 10px;
+			bottom: 2px;
+			width: 6px;
+			height: 6px;
+			background-color: #333;
+			border-radius: 100%;
+		}
+	}
 }
 
 div ul {
 	margin-top: 2px;
-}
-
-ul.left {
-	display: inline-flex;
-	flex-direction: column;
-	li {
-		text-align: left;
-	}
 }
 
 .center {
@@ -58,6 +72,10 @@ li h4 {
 	margin-bottom: 0;
 }
 
+div ~ h3 {
+	margin-top: 32px;
+}
+
 header {
 	a {
 		font-size: 24px;
@@ -73,33 +91,40 @@ header {
 }
 
 code {
-	@paddingx: 3px;
-	@paddingy: 3px;
 	font-family: Consolas, monospace;
 	font-size: 0.8em;
-	border-left:1px solid #000;
-	border-right:1px solid #ccc;
-	text-align: left;
-	white-space: pre;
-	padding: @paddingy @paddingx;
-	display: inline-block;
-	&:before, &:after {
-		content:"";
-		display:block;
-		height:1px;
-		width:~"calc(100% + " @paddingx * 2 ~")";
-		background:linear-gradient(to right, #000, #ccc);
-		position: relative;
-		right: @paddingx;
+	&.block {
+		text-align: left;
+		white-space: pre;
 	}
-	&:before {
-		bottom: @paddingy
-	}
-	&:after {
-		top: @paddingy;
-	}
-	&[lang="js"] {
-		tab-size: 2;
+	&.box {
+		@paddingx: 3px;
+		@paddingy: 3px;
+		border-left:1px solid #000;
+		border-right:1px solid #ccc;
+		margin: 10px 0;
+		text-align: left;
+		white-space: pre;
+		padding: @paddingy @paddingx;
+		display: inline-block;
+		&:before, &:after {
+			content:"";
+			display:block;
+			height:1px;
+			width:~"calc(100% + " @paddingx * 2 ~")";
+			background:linear-gradient(to right, #000, #ccc);
+			position: relative;
+			right: @paddingx;
+		}
+		&:before {
+			bottom: @paddingy
+		}
+		&:after {
+			top: @paddingy;
+		}
+		&[lang="js"] {
+			tab-size: 2;
+		}
 	}
 }
 

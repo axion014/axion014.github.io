@@ -15,18 +15,10 @@
 		<h3 class="center">一体phina.namespaceとは何なのか?</h3>
 		<div class="center">
 			実は大したものではありません。
-			<br>
-			<code lang="js">phina.namespace(function() {
-	var x = 0;
-});</code>
-			<br>
+			<code>phina.namespace(function() {var x = 0;});</code>
 			は、
-			<br>
-			<code lang="js">(function() {
-	var x = 0;
-})();</code>
-			<br>
-			の単なる代わりです。どちらもまったく同じ動作(つまりvarによる変数宣言のスコープの役割)をします。
+			<code>(function() {var x = 0;})();</code>
+			の単なる代わりです。どちらもまったく同じ動作(つまり<code>var</code>による変数宣言のスコープの役割)をします。
 		</div>
 		<hr>
 		<h4 class="center">last modified: 2016/8/23</h4>
