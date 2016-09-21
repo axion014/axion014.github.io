@@ -21,13 +21,11 @@
 			とするだけでオブジェクトを作ることが出来るのです。これは、関数Hogeが内部で
 			<code>new Hoge();</code>
 			のようなものを呼び出しているからに他なりません。phina.jsのソースコードを見ると、以下のような場所があります。
-			<br>
-			<code class="box" lang="js">var _class = function() {
+			<br><code class="box" lang="js">var _class = function() {
 	var instance = new _class.prototype._creator();
 	_class.prototype.init.apply(instance, arguments);
 	return instance;
-};</code>
-			<br>
+};</code><br>
 			2行目が肝です。変数instanceに
 			<code>new _class.prototype._creator()</code>
 			を代入しています。これが全てのphina.jsのオブジェクトの元です。ただ、この特性上、Chromeのデバッガなどではphina.jsのオブジェクトの型は全て
@@ -41,9 +39,9 @@
 				<li>
 					<h4>$method</h4>
 					$methodは、自らに指定した名前のメソッドを追加するためのメソッドです。
-					<code>object.$method('accept', function() {});</code>
+					<br><code>object.$method('accept', function() {});</code><br>
 					というコードは、ほとんど
-					<code>object.accept = function() {};</code>
+					<br><code>object.accept = function() {};</code><br>
 					というコードと同等ですが、下記のforInなどでアクセスできない所が異なります。
 				</li>
 				<li>

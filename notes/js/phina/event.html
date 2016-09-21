@@ -101,11 +101,13 @@ object.flare("hello", {name: "axion014"});</code>
 					<br>
 					<code class="box" lang="js">var object = phina.util.EventDispatcher();
 object.on("something", function() {});
+
 console.log(object.has("something"));</code>
 					<br>
 					このコードはtrueを、
 					<br>
 					<code class="box" lang="js">var object = phina.util.EventDispatcher();
+
 console.log(object.has("something"));</code>
 					<br>
 					このコードはfalseを出力します。
@@ -118,6 +120,7 @@ console.log(object.has("something"));</code>
 object.on("something", function() {});
 object.on("something", function() {});
 object.clear("something");
+
 console.log(object.has("something"));</code>
 					<br>
 					このコードを実行すると、falseが出力されます。
