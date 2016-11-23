@@ -1,4 +1,5 @@
-<html>
+<!doctype html>
+<html itemscope itemtype="http://schema.org/TechArticle">
 	<head>
 		<meta charset="UTF-8" />
 
@@ -21,7 +22,7 @@
 			とするだけでオブジェクトを作ることが出来るのです。これは、関数Hogeが内部で
 			<code>new Hoge();</code>
 			のようなものを呼び出しているからに他なりません。phina.jsのソースコードを見ると、以下のような場所があります。
-			<br><code class="box" lang="js">var _class = function() {
+			<br><code class="box js">var _class = function() {
 	var instance = new _class.prototype._creator();
 	_class.prototype.init.apply(instance, arguments);
 	return instance;
@@ -48,7 +49,7 @@
 					<h4>getter/setter/accessor</h4>
 					これらのメソッドは、ゲッターやセッターを定義するためのメソッドです。これらのコードは、definePropertyメソッドの短縮形です。
 					<br>
-					<code class="box" lang="js">object.getter('x', function() {return this._x;);
+					<code class="box js">object.getter('x', function() {return this._x;);
 
 object.setter('y', function(y) {this._y = y;});
 
@@ -57,7 +58,7 @@ object.accessor('z', {
 	set: function(z) {this._z = z;}
 });</code>
 					<br>
-					<code class="box" lang="js">Object.defineProperty(object, 'x', {
+					<code class="box js">Object.defineProperty(object, 'x', {
 	get: function () {return this._x;},
 	enumerable: false
 });
@@ -79,7 +80,7 @@ Object.defineProperty(object, 'z', {
 					<h4>forIn</h4>
 					forInメソッドは、自らが持つ全てのenumerableなプロパティー(通常のプロパティーは全てenumerable)をループ処理します。第一引数に渡した関数は、第二引数(無ければ自らのオブジェクト)をthisとして、現在処理しているプロパティーの名前、値、インデックスを渡して実行されます。
 					<br>
-					<code class="box" lang="js">var object = {
+					<code class="box js">var object = {
 	a: "foo",
 	b: "bar"
 };
@@ -99,14 +100,14 @@ object.forIn(function(key, value, index) {
 					<h4>$extend/$safe</h4>
 					これらのメソッドは、自らのオブジェクトに渡されたオブジェクトを合成します。重複するプロパティーがあったとき、$extendは渡されたオブジェクトのプロパティーを、$safeは自らのプロパティーを優先します。
 					<br>
-					<code class="box" lang="js">var object = {a: "foo", b: "bar"};
+					<code class="box js">var object = {a: "foo", b: "bar"};
 
 object.$extend({b: "foo", c: "bar"}));
 // object === {a: "foo", b: "foo", c: "bar"}</code>
 					<br>
 					このサンプルを実行すると、 object.b は "foo" になります。元々 "bar" で初期化された変数bは、$extendメソッドによって上書きされるからです。
 					<br>
-					<code class="box" lang="js">var object = {a: "foo", b: "bar"};
+					<code class="box js">var object = {a: "foo", b: "bar"};
 
 object.$safe({b: "foo", c: "bar"}));
 // object === {a: "foo", b: "bar", c: "bar"}</code>
@@ -116,7 +117,7 @@ object.$safe({b: "foo", c: "bar"}));
 				<li>
 					<h4>$toArray</h4>
 					このメソッドは、自らをArray-like objectと扱い、配列に変換します。また、phina.js環境下では、Array.fromが実装されているので、
-					<code lang="js">var array = Array.prototype.from(obj);</code>
+					<code class="js">var array = Array.prototype.from(obj);</code>
 					としても問題ありません。
 				</li>
 				<li>
@@ -126,7 +127,7 @@ object.$safe({b: "foo", c: "bar"}));
 			</ul><br>
 		</div>
 		<hr>
-		<h4 class="center">last modified: <time itemprop="datePublished">2016/8/24</time></h4>
+		<h4 class="center">last modified: <data value="2016-08-24" itemprop="dateModified">2016/8/24</data></h4>
 		<a href="./" class="center">phina.jsホームへ</a>
 		<script>
 			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

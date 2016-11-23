@@ -1,4 +1,5 @@
-<html>
+<!doctype html>
+<html itemscope itemtype="http://schema.org/TechArticle">
 	<head>
 		<meta charset="UTF-8" />
 
@@ -17,14 +18,14 @@
 			phina.jsのオブジェクトには、tweenerというプロパティーがあり、
 			<a class="external" href="http://qiita.com/simiraaaa/items/b80fec588fa2db272f67">[phina.js] Tweenerを使いこなそう! [Tweener 基本編]</a>
 			などで説明されているように、単純なアニメーションを実現するのにとても便利です。しかし、同時に複数のアニメーションを実現するには、少々難しいテクニックが必要になります。このページでは、その方法を説明します。通常の単一アニメーションは、
-			<br><code class="box" lang="js">phinaobj.tweener.to({x: 200}, 1000)
+			<br><code class="box js">phinaobj.tweener.to({x: 200}, 1000)
 	.to({y: 150}, 400, 'swing');
 	// .play();    // 2回目以降</code><br>
 			というようなパターンをとります。このコードは、phinaobjのプロパティーxを1秒かけて200に変化させ、それからプロパティーyを0.4秒で150にします。ただし、この方法では2つのアニメーションは順番に適用され、同時にはできません。複数のアニメーションをいっぺんに再生するには、phinaobjに複数のtweenerを関連付けなければなりません。そのためには、新しくTweenerのオブジェクトを生成し、そのattachToメソッドで以下のように関連付けます(tweener2は任意の変数、ここでは新しくphinaobjのプロパティーを作って代入している)。
-			<br><code class="box" lang="js">phinaobj.tweener2 = phina.accessory.Tweener()
+			<br><code class="box js">phinaobj.tweener2 = phina.accessory.Tweener()
 	.attachTo(phinaobj);</code><br>
 			後は、2つあるtweenerに対してそれぞれアニメーションを指定すれば、目的のアニメーションが実現できます。最終的なコードは以下の通りです。
-			<br><code class="box" lang="js">phinaobj.tweener2 = phina.accessory.Tweener()
+			<br><code class="box js">phinaobj.tweener2 = phina.accessory.Tweener()
 	.attachTo(phinaobj);
 
 phinaobj.tweener.to({x: 200}, 1000);
@@ -40,7 +41,7 @@ phinaobj.tweener2.to({y: 150}, 400, 'swing');</code><br>
 			としていた所を
 			<br><code>tween.to(vec, {x: 55}, 550, 'linear')</code><br>
 			と置き換えるだけです。ただし、これだけでは動きません。Tweenerが行ってくれていた毎フレームの移動処理を行っていないからです。そこで、Sceneなり自作クラスなりのupdate関数にその処理を加えましょう。以下のようにします。
-			<br><code class="box" lang="js">update: function(app) {
+			<br><code class="box js">update: function(app) {
 	/*
 	 * 元々からあった処理
 	 */
@@ -51,7 +52,7 @@ phinaobj.tweener2.to({y: 150}, 400, 'swing');</code><br>
 			<code>1000 / app.fps</code>
 			ミリ秒だけ進みます。カッコ内の式は、このフレームにどれだけアニメーションの時間を進めるかを決定しているので、この式を変更することでTweenerのupdateTypeに相当することも行えます。
 			また、update関数から変数tweenを参照できるようにしておくことも忘れずに。Tweenによるアニメーションを多数行いたい場合の例を以下に示します。
-			<br><code class="box" lang="js">init: function(options) {
+			<br><code class="box js">init: function(options) {
 	this.superInit(options);
 
 	/*
@@ -73,10 +74,10 @@ update: function(app) {
 		tween.forward(1000 / app.fps);
 	});
 }</code><br>
-		しかし、このようなことをする機会は滅多に無いでしょう。備忘録程度に覚えていただければと思います。
+		しかし、このようなことをする機会は滅多に無いでしょう。備忘録程度に考えていただければと思います。
 		</div>
 		<hr>
-		<h4 class="center">last modified: <time itemprop="datePublished">2016/9/21</time></h4>
+		<h4 class="center">last modified: <data value="2016-09-21" itemprop="dateModified">2016/9/21</data></h4>
 		<a href="./" class="center">phina.jsホームへ</a>
 		<script>
 			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
