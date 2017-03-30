@@ -109,6 +109,7 @@ code {
 		white-space: pre;
 		padding: @paddingy @paddingx;
 		display: inline-block;
+		max-width: 99%;
 		&:before, &:after {
 			content:"";
 			display:block;
@@ -119,7 +120,7 @@ code {
 			right: @paddingx;
 		}
 		&:before {
-			bottom: @paddingy
+			bottom: @paddingy;
 		}
 		&:after {
 			top: @paddingy;
@@ -147,9 +148,10 @@ code {
 	text-align: right;
 	border: solid 1px gray;
 	margin: 20px 5%;
+	padding: 5px;
 	& > *:first-child {
 		float: right;
-		margin: 8px;
+		margin-left: 8px;
 		max-width: 30vw;
 		height: inherit;
 		img {
@@ -220,21 +222,20 @@ code {
 
 .dlbutton {
 	position: relative;
-	width: 120px;
+	width: 124px;
 	a {
 		background-color: rgba(0, 0, 0, 0.3);
 		transition: all 0.3s;
-		padding: 3px 15px;
+		padding: 3px 18px;
 		&:hover {
 			background-color: rgba(0, 0, 0, 0.2);
-			padding: 4px 24px 4px 10px;
-			right: 12px;
+			padding: 4px 28px 4px 12px;
 			&::before {
-				right: 12px;
+				right: 14px;
 				width: 8px;
 			}
 			&::after {
-				right: 8px;
+				right: 10px;
 				border: solid 8px transparent;
 				border-top: solid 0 #666;
 				border-top-width: 10px;
@@ -244,20 +245,20 @@ code {
 			content: "";
 			position: absolute;
 			top: 4px;
-			right: 20px;
+			right: 22px;
 			width: 0;
 			height: 6px;
-			transition: all 0.5s;
+			transition: all 0.3s;
 			background-color: #666;
 		}
 		&::after {
 			content: "";
 			position: absolute;
 			top: 12px;
-			right: 20px;
+			right: 22px;
 			width: 0;
 			height: 0;
-			transition: all 0.5s;
+			transition: all 0.3s;
 			border: solid 0px transparent;
 			border-top: solid 0 #666;
 			border-top-width: 10px;
@@ -293,6 +294,10 @@ footer {
 	}
 	#link {
 		width: 240px;
+	}
+	code.box {
+		overflow-x: scroll;
+		overflow-y: hidden;
 	}
 }
 @media screen and (min-width: 450px) {
