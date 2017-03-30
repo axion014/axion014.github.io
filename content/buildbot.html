@@ -35,11 +35,11 @@
 			<code>dirt at (0, 4, 0)</code>
 			<p>とすれば、プレイヤーはX座標0, Y座標4, Z座標0の位置に土ブロックを設置します。他の例として、</p>
 			<code>stone cylinder(axis: y, radius: 3) at (10, 4~8, -10)</code>
-			<p>とすれば、プレイヤーはX座標10, Z座標-10の位置を中心とし、Y座標4から8までの範囲で縦向き、半径3ブロックの石ブロックからなる円を建築します。以下に厳密な文法を示します。</p>
-			<code>&lt;blockname&gt; [&lt;line|plane|box|circle|cylinder&gt;[attribute]] at ([x|xmin~xmax], [y|ymin~ymax], [z|zmin~zmax])</code>
+			<p>とすれば、プレイヤーはX座標10, Z座標-10の位置を中心とし、Y座標4から8までの範囲で縦向き、半径3ブロックの石ブロックからなる円柱を建築します。以下に厳密な文法を示します(&lt;&gt;囲いは必須、[]囲いはオプション)。</p>
+			<code>&lt;blockname&gt; [&lt;line|plane|box|circle|cylinder&gt;[(attribute)]] at [(]&lt;x|xmin~xmax&gt;, &lt;y|ymin~ymax&gt;, &lt;z|zmin~zmax&gt;[)]</code>
 			<p>attributeには現状3種類の属性が指定できます。一つはaxisで、circle/cylinderでは必須ですが他では付与できません。円/円柱の軸が向く方向を指定します。</p>
 			<p>二つ目はradius、同じくcircle/cylinderでは必須ですが他では付与できません。円/円柱の半径を指定します。</p>
-			<p>最後の一つはhollowで、いずれにも指定できます。0から3までの整数(上限は図形によって変わる)を指定でき、大きな数値を指定するほど図形の内部が中空になります。</p>
+			<p>最後の一つはhollowで、いずれにも指定できます。0から3までの整数(上限は図形によって変わる)を指定でき、大きな数値を指定するほど図形の内部が中空になります。<span class="hidden">circle/cylinderの属性部分に"bold"を指定すると…?</span></p>
 			<p>座標部分の~は図形の持つ次元の数だけ必ず必要で、それより多くても少なくてもいけません。</p>
 			<h3>おわりに</h3>
 			<p>動作がまだ完璧ではなく、特に上下の移動をした時にブロックの設置が失敗して停止してしまうことがありますが、それでも気になる方はこちらからダウンロードしてください。</p>
