@@ -36,15 +36,19 @@
 			<p>とすれば、プレイヤーはX座標0, Y座標4, Z座標0の位置に土ブロックを設置します。他の例として、</p>
 			<code>stone cylinder(axis: y, radius: 3) at (10, 4~8, -10)</code>
 			<p>とすれば、プレイヤーはX座標10, Z座標-10の位置を中心とし、Y座標4から8までの範囲で縦向き、半径3ブロックの石ブロックからなる円柱を建築します。以下に厳密な文法を示します(&lt;&gt;囲いは必須、[]囲いはオプション)。</p>
-			<code>&lt;blockname&gt; [&lt;line|plane|box|circle|cylinder&gt;[(attribute)]] at [(]&lt;x|xmin~xmax&gt;, &lt;y|ymin~ymax&gt;, &lt;z|zmin~zmax&gt;[)]</code>
-			<p>attributeには現状3種類の属性が指定できます。一つはaxisで、circle/cylinderでは必須ですが他では付与できません。円/円柱の軸が向く方向を指定します。</p>
+			<code>&lt;blockname|(blocknames)&gt; [&lt;line|plane|box|circle|cylinder&gt;[(attribute)]] at [(]&lt;x|xmin~xmax&gt;, &lt;y|ymin~ymax&gt;, &lt;z|zmin~zmax&gt;[)]</code>
+			<p>(blocknamesとかいうのは置いといて)blocknameの部分には置きたいブロックの未翻訳名(マイクラを起動してF3+Hキーを押せば見れる)を指定します。そしてその次、lineかplaneかもしくは…というところは、ブロックをどのような形に設置するかです。何かしらを指定すれば、複数のブロックをいっぺんに置いてくれます。</p>
+			<p>attributeには現状3種類の属性が指定できます。一つはaxisで、circle/cylinder(円/円柱)では必須ですが他では付与できません。円/円柱の軸が向く方向を指定します。</p>
 			<p>二つ目はradius、同じくcircle/cylinderでは必須ですが他では付与できません。円/円柱の半径を指定します。</p>
 			<p>最後の一つはhollowで、いずれにも指定できます。0から3までの整数(上限は図形によって変わる)を指定でき、大きな数値を指定するほど図形の内部が中空になります。<span class="hidden">circle/cylinderの属性部分に"bold"を指定すると…?</span></p>
-			<p>座標部分の~は図形の持つ次元の数だけ必ず必要で、それより多くても少なくてもいけません。</p>
+			<p>そうしたら最後にX, Y, Z座標を指定すれば一行出来上がりです。左右の()は省略できます。座標部分の~は図形の持つ次元の数だけ必ず必要で、それより多くても少なくてもいけません。</p>
+			<p>さて、blocknamesについての説明です。ブロック名の部分には、複数種類のブロックを指定することができます(但しブロック単体/円以外の形状が指定されている場合のみ)。上で"dirt"とか"stone"などとしていた部分を、</p>
+			<code>(blockname, blockname, ...)</code>
+			<p>と置き換えます。すると、プレイヤーは指定されたブロックを順番に(指定の最後まで行ったらまた最初から)置いてくれます。</p>
 			<h3>おわりに</h3>
 			<p>動作がまだ完璧ではなく、特に上下の移動をした時にブロックの設置が失敗して停止してしまうことがありますが、それでも気になる方はこちらからダウンロードしてください。</p>
 			<div class="dlbutton center">
-				<a href="https://raw.githubusercontent.com/axion014/Buildbot/master/build/libs/Buildbot-1.11.2-1.0.jar">Download</a>
+				<a href="https://raw.githubusercontent.com/axion014/Buildbot/master/build/libs/Buildbot-1.11.2-1.1.jar">Download</a>
 			</div>
 		</div>
 		<hr>
