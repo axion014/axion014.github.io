@@ -41,7 +41,7 @@
 			<p>attributeには現状3種類の属性が指定できます。一つはaxisで、circle/cylinder(円/円柱)では必須ですが他では付与できません。円/円柱の軸が向く方向を指定します。</p>
 			<p>二つ目はradius、同じくcircle/cylinderでは必須ですが他では付与できません。円/円柱の半径を指定します。</p>
 			<p>最後の一つはhollowで、いずれにも指定できます。0から3までの整数(上限は図形によって変わる)を指定でき、大きな数値を指定するほど図形の内部が中空になります。<span class="hidden">circle/cylinderの属性部分に"bold"を指定すると…?</span></p>
-			<p>そうしたら最後にX, Y, Z座標を指定すれば一行出来上がりです。左右の()は省略できます。座標部分の~は図形の持つ次元の数だけ必ず必要で、それより多くても少なくてもいけません。</p>
+			<p>そうしたら最後にX, Y, Z座標を指定すれば一行出来上がりです。左右の()は省略できます。座標部分の~は図形の持つ次元の数だけ必ず必要で、それより多くても少なくてもいけません。ただし、範囲を表す~とは別で、前に何の数字もない~はバニラのコマンドと同じく、プレイヤーからの相対位置を表します。</p>
 			<p>さて、blocknamesについての説明です。ブロック名の部分には、複数種類のブロックを指定することができます(但しブロック単体/円以外の形状が指定されている場合のみ)。上で"dirt"とか"stone"などとしていた部分を、</p>
 			<code>(blockname, blockname, ...)</code>
 			<p>と置き換えます。すると、プレイヤーは指定されたブロックを順番に(指定の最後まで行ったらまた最初から)置いてくれます。</p>
@@ -51,11 +51,11 @@
 			<h3>おわりに</h3>
 			<p>動作がまだ完璧ではなく、特に上下の移動をした時にブロックの設置が失敗して停止してしまうことがありますが、それでも気になる方はこちらからダウンロードしてください。</p>
 			<div class="dlbutton center">
-				<a href="https://raw.githubusercontent.com/axion014/Buildbot/master/build/libs/Buildbot-1.11.2-1.3.jar">Download</a>
+				<a href="https://raw.githubusercontent.com/axion014/Buildbot/master/build/libs/Buildbot-1.11.2-1.3.1.jar">Download</a>
 			</div>
 		</div>
 		<hr>
-		<h4 class="center">last modified: <data value="2017-08-10" itemprop="dateModified">2017/8/10</data></h4>
+		<h4 class="center">last modified: <data value="2017-08-11" itemprop="dateModified">2017/8/11</data></h4>
 		<script>
 			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
