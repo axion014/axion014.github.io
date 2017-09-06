@@ -1,21 +1,20 @@
 phina.define("Infiniteof", {
   superClass: 'phina.display.DisplayElement',
-  init: function(source, gap, sendindex) {
-    this.superInit();
+  init: function(source, pitch, options) {
+    this.superInit(options);
     this.source = source;
-    this.gap = gap;
-    this.sendindex = sendindex;
+    this.pitch = pitch;
 		this.reset();
   },
   draw: function() {
     var scene = this.getRoot();
     var globalpos = this.globalPosition;
-    var backrate = -Math.floor(Math.min(globalpos.x / this.gap.x, globalpos.y / this.gap.y));
-    var base = this.gap.clone().mul(backrate + 1);
-    for(var pos = this.gap.clone().mul(backrate - 1), i = 0; pos.x - base.x < scene.width && pos.y - base.y < scene.height;
-        pos = pos.clone().add(this.gap), i++) {
+    var backrate = -Math.floor(Math.min(globalpos.x / this.pitch.x, globalpos.y / this.pitch.y));
+    var base = this.pitch.clone().mul(backrate + 1);
+    for(var pos = this.pitch.clone().mul(backrate - 1), i = 0; pos.x - base.x < scene.width && pos.y - base.y < scene.height;
+        pos = pos.clone().add(this.pitch), i++) {
 			if (i + backrate >= this.nodemin && i + backrate < this.nodemax) continue;
-      var node = this.source(this.sendindex ? i + backrate : undefined).addChildTo(this);
+      var node = this.source(i + backrate).addChildTo(this);
 			node.position = pos;
 			node._i = i + backrate;
 
@@ -38,6 +37,79 @@ phina.define("Infiniteof", {
 		});
     this.children = [];
 	}
+});
+
+phina.define("List", {
+  superClass: 'phina.display.DisplayElement',
+	renderChildBySelf: true,
+  init: function(vertical, padding, options) {
+    this.superInit(options);
+    this.vertical = vertical;
+    this.padding = padding;
+  },
+  draw: function(canvas) {
+		var renderer = phina.display.CanvasRenderer(canvas);
+		// Rendererのコピペ
+		var length = 0;
+		this.children.each(function(obj) {
+			if (obj.visible === false && !obj.interactive) return;
+
+      obj._calcWorldMatrix && obj._calcWorldMatrix();
+
+      if (obj.visible === false) return;
+
+      obj._calcWorldAlpha && obj._calcWorldAlpha();
+
+      var context = canvas.context;
+
+      context.globalAlpha = obj._worldAlpha;
+      context.globalCompositeOperation = obj.blendMode;
+
+      if (obj._worldMatrix) {
+        // 行列をセット
+        var m = obj._worldMatrix;
+				if (this.vertical) {
+					m.m12 = this._worldMatrix.m12 + length;
+				} else {
+					m.m02 = this._worldMatrix.m02 + length;
+				}
+        context.setTransform( m.m00, m.m10, m.m01, m.m11, m.m02, m.m12);
+      }
+
+      if (obj.clip) {
+
+        context.save();
+
+        obj.clip(canvas);
+        context.clip();
+
+        if (obj.draw) obj.draw(canvas);
+
+        // 子供たちも実行
+        if (obj.renderChildBySelf === false && obj.children.length > 0) {
+            var tempChildren = obj.children.slice();
+            for (var i=0,len=tempChildren.length; i<len; ++i) {
+                renderer.renderObject(tempChildren[i]);
+            }
+        }
+
+        context.restore();
+      }
+      else {
+        if (obj.draw) obj.draw(canvas);
+
+        // 子供たちも実行
+        if (obj.renderChildBySelf === false && obj.children.length > 0) {
+          var tempChildren = obj.children.slice();
+          for (var i=0,len=tempChildren.length; i<len; ++i) {
+            renderer.renderObject(tempChildren[i]);
+          }
+        }
+
+      }
+			length += (this.vertical ? obj.height * obj.scaleY : obj.width * obj.scaleX) + this.padding;
+		}, this);
+  }
 });
 
 // 親子関係のルートから順番に格納された配列

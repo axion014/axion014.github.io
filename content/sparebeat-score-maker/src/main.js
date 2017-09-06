@@ -15,6 +15,12 @@ phina.game.LoadingScene.defaults.$extend({
 	height: SCREEN_HEIGHT
 });
 
+phina.ui.Button.defaults.$extend({
+	width: 160,
+	height: 64,
+	fontSize: 24
+});
+
 var NOTHING = 0;
 var NORMAL = 1;
 var ATTACK = 2;
@@ -70,7 +76,7 @@ phina.define('MainScene', {
 			stroke: null
 		}).addChildTo(this);
 		this.currentpos.alpha = 0.3;
-		this.score = DisplayElement().setPosition(SCREEN_CENTER_X, SCREEN_HEIGHT).addChildTo(this);
+		this.score = DisplayElement({x: SCREEN_CENTER_X, y: SCREEN_HEIGHT}).addChildTo(this);
 		this.extend = Button({x: -320, y: -2360, text: "+", width: 48, height: 48}).on("pointstart", function() {
 			this.time[this.level]++;
 			if (this.lengths[this.level].length < this.time[this.level]) this.lengths[this.level].push(16);
@@ -91,7 +97,7 @@ phina.define('MainScene', {
 				fontFamily: "Nova Mono"
 			}).addChildTo(group);
 			return group;
-		}.bind(this), Vector2(0, 30), true).addChildTo(this.score);
+		}.bind(this), Vector2(0, 30)).addChildTo(this.score);
 		this.notes = Infiniteof(function(i) {
 			if (!this.notesdata[this.level][-i]) this.notesdata[this.level][-i] = [0, 0, 0, 0];
 			var group = DisplayElement();
@@ -144,7 +150,7 @@ phina.define('MainScene', {
 				}).$safe({i: -i, j: j}).setInteractive(true).addChildTo(group);
 			}
 			return group;
-		}.bind(this), Vector2(0, 30), true).addChildTo(this.score);
+		}.bind(this), Vector2(0, 30)).addChildTo(this.score);
 		this.tripletnotes = Infiniteof(function(i) {
 			if (!this.tripletnotesdata[this.level][-i]) this.tripletnotesdata[this.level][-i] = [0, 0, 0, 0];
 			var group = DisplayElement();
@@ -181,7 +187,7 @@ phina.define('MainScene', {
 				}).$safe({i: -i, j: j}).setInteractive(true).addChildTo(group);
 			}
 			return group;
-		}.bind(this), Vector2(0, this.notes.gap.y / 3 * 2), true).setX(120).setVisible(false).addChildTo(this.score);
+		}.bind(this), Vector2(0, this.notes.pitch.y / 3 * 2), {x: 120}).hide().addChildTo(this.score);
 		this.notesCountLabel = Label({
 			text: "0 Notes\n0 Attack Notes\n0.00 Notes Per Second",
 			fontSize: 22,
@@ -189,73 +195,110 @@ phina.define('MainScene', {
 			align: "left",
 			baseline: "top"
 		}).setPosition(10, 35).addChildTo(this);
-		this.on('enter', function(e) {
-			e.app.domElement.addEventListener('wheel', function(e) {
-				this.score.y = Math.min(Math.max(this.score.y - e.deltaY * (e.deltaMode === 1 ? 35 : 1), 640), this.notes.gap.y * this.lengths[this.level].totaltime);
-				this.updateGraphY();
-			}.bind(this));
-		}, this);
-		document.getElementById("export").addEventListener("click", this.export.bind(this));
-		Button({text: "Triplet"}).setPosition(840, 160).on("pointstart", function() {
-			this.tripletnotes.visible = !this.tripletnotes.visible;
-			this.notes.x = this.tripletnotes.visible ? -120 : 0;
-		}.bind(this)).addChildTo(this);
+		var BUTTONS_X = 860;
 		var notetype = Button({
 			text: "Normal Notes",
 			fill: colorOf(NORMAL),
-			fontSize: 24
-		}).setPosition(840, 60).on("pointstart", function() {
+			fontSize: 20
+		}).setPosition(BUTTONS_X, 50).on("pointstart", function() {
 			if (++this.notetype > LONG_END) this.notetype = NORMAL;
 			notetype.text = ["Normal Notes", "Attack Notes", "Long-Start", "Long-end"][this.notetype - 1];
 			notetype.fill = colorOf(this.notetype);
 		}.bind(this)).addChildTo(this);
-		var updateDifficutly = function() {
+		Button({text: "Triplet"}).setPosition(BUTTONS_X, 130).on("pointstart", function() {
+			this.tripletnotes.visible = !this.tripletnotes.visible;
+			this.notes.x = this.tripletnotes.visible ? -120 : 0;
+		}.bind(this)).addChildTo(this);
+
+		var updateDifficutly = function(level) {
+			this.level = level;
 			this.fullUpdate();
 			easyButton.fill = "#1abc9c";
 			normalButton.fill = "#f1c40f";
 			hardButton.fill = "#c0392b";
 		}.bind(this);
-		var easyButton = Button({text: "Easy", fill: "#1abc9c"}).setPosition(840, 260).on("pointstart", function() {
-			this.level = "easy";
-			updateDifficutly();
+
+		var easyButton = Button({text: "Easy", fill: "#1abc9c"}).setPosition(BUTTONS_X, 210).on("pointstart", function() {
+			updateDifficutly("easy");
 			easyButton.fill = "#18997a";
 		}.bind(this)).addChildTo(this);
-		var normalButton = Button({text: "Normal", fill: "#cea20a"}).setPosition(840, 360).on("pointstart", function() {
-			this.level = "normal";
-			updateDifficutly();
+		var normalButton = Button({text: "Normal", fill: "#cea20a"}).setPosition(BUTTONS_X, 290).on("pointstart", function() {
+			updateDifficutly("normal");
 			normalButton.fill = "#cea20a";
 		}.bind(this)).addChildTo(this)
-		var hardButton = Button({text: "Hard", fill: "#c0392b"}).setPosition(840, 460).on("pointstart", function() {
-			this.level = "hard";
-			updateDifficutly();
+		var hardButton = Button({text: "Hard", fill: "#c0392b"}).setPosition(BUTTONS_X, 370).on("pointstart", function() {
+			updateDifficutly("hard");
 			hardButton.fill = "#a43220";
 		}.bind(this)).addChildTo(this);
-		/*Button({text: "Metadata", fill: "#444444"}).setPosition(840, 560).on("pointstart", function() {
+
+		Button({text: "Save"}).setPosition(BUTTONS_X, 450).on("pointstart", function() {
+			var saves = JSON.parse(localStorage.getItem('saves') || "[]");
+			this.export();
+			var save = {changed: Date.now(), json: this.json};
+			if (this.id) {
+				saves[this.id] = save;
+			} else {
+				saves.push(save);
+				this.id = saves.length - 1;
+			}
+			localStorage.setItem('saves', JSON.stringify(saves));
+		}.bind(this)).addChildTo(this);
+		Button({text: "Load"}).setPosition(BUTTONS_X, 530).on("pointstart", function() {
+			this.app.pushScene(LoadMenuScene(this));
+		}.bind(this)).addChildTo(this);
+
+		/*Button({text: "Metadata", fill: "#444444"}).setPosition(840, 610).on("pointstart", function() {
 			this.app.pushScene(MetaSettingScene(this.json));
 		}.bind(this)).addChildTo(this);*/
 
+		var importFile = function(file) {
+			var fileReader = new FileReader();
+			fileReader.onload = function(event) {
+				this.import(JSON.parse(event.target.result));
+				this.id = null;
+			}.bind(this);
+			fileReader.readAsText(file);
+		}.bind(this);
+
+		document.getElementById("import").addEventListener("change", function(event) {
+			importFile(event.target.files[0]);
+		});
+
 		this.on("enter", function(e) {
+			e.app.domElement.addEventListener('wheel', function(e) {
+				this.score.y = Math.min(Math.max(this.score.y - e.deltaY * (e.deltaMode === 1 ? 35 : 1), 640), this.notes.pitch.y * this.lengths[this.level].totaltime);
+				this.updateGraphY();
+			}.bind(this));
 			e.app.domElement.addEventListener("dragover", function(event) {
 		    event.preventDefault();
 				event.dataTransfer.dropEffect = 'copy';
 		  });
 		  e.app.domElement.addEventListener("drop", function(event) {
 				event.preventDefault();
-		  	var file = event.dataTransfer.files[0];
-		  	var fileReader = new FileReader();
-		    fileReader.onload = function(event) {
-		      this.import(event.target.result);
-		    }.bind(this);
-		    fileReader.readAsText(file);
-		  }.bind(this));
-			document.getElementById("import").addEventListener("change", function(event) {
-		  	var file = event.target.files[0];
-		  	var fileReader = new FileReader();
-		    fileReader.onload = function(event) {
-		      this.import(event.target.result);
-		    }.bind(this);
-		    fileReader.readAsText(file);
-		  }.bind(this));
+		  	importFile(event.dataTransfer.files[0]);
+		  });
+		});
+
+		document.getElementById("export").addEventListener("click", function() {
+			var json = this.export();
+			console.time("copy");
+			var temp = document.createElement('textarea');
+
+			temp.value = json;
+			temp.selectionStart = 0;
+			temp.selectionEnd = temp.value.length;
+
+			var s = temp.style;
+			s.position = 'fixed';
+			s.left = '-100%';
+
+			document.body.appendChild(temp);
+			temp.focus();
+			var result = document.execCommand('copy');
+			temp.blur();
+			document.body.removeChild(temp);
+			console.timeEnd("copy");
+			if (!result) console.error("export failed!");
 		}.bind(this));
 	},
 	updateDencityGraph: function() {
@@ -281,16 +324,16 @@ phina.define('MainScene', {
 	},
 	updateGraphY: function() {
 		// 37080 = (629 + 6 - 10 / 2) * 60
-		this.currentpos.y = 629 - (this.score.y - 640) / 60 * Math.min(37080 / (this.notes.gap.y * this.lengths[this.level].totaltime - 640), 1);
-		this.dencitygraph.y = (this.score.y - 640) / 60 * (1 - Math.min(37080 / (this.notes.gap.y * this.lengths[this.level].totaltime - 640), 1));
+		this.currentpos.y = 629 - (this.score.y - 640) / 60 * Math.min(37080 / (this.notes.pitch.y * this.lengths[this.level].totaltime - 640), 1);
+		this.dencitygraph.y = (this.score.y - 640) / 60 * (1 - Math.min(37080 / (this.notes.pitch.y * this.lengths[this.level].totaltime - 640), 1));
 	},
 	updateTime: function(updategraph) {
-		this.extend.y = -this.notes.gap.y * this.lengths[this.level].totaltime + 40;
-		this.cut.y = this.extend.y + this.lengths[this.level].diff[this.lengths[this.level].length - 1] * this.notes.gap.y;
-		if (this.score.y > this.notes.gap.y * this.lengths[this.level].totaltime) {
+		this.extend.y = -this.notes.pitch.y * this.lengths[this.level].totaltime + 40;
+		this.cut.y = this.extend.y + this.lengths[this.level].diff[this.lengths[this.level].length - 1] * this.notes.pitch.y;
+		if (this.score.y > this.notes.pitch.y * this.lengths[this.level].totaltime) {
 			this.notes.sleep();
 			this.tripletnotes.sleep();
-			this.score.tweener.to({y: this.notes.gap.y * this.lengths[this.level].totaltime}, 500, "easeOutQuad").call(function() {
+			this.score.tweener.to({y: this.notes.pitch.y * this.lengths[this.level].totaltime}, 500, "easeOutQuad").call(function() {
 				this.notes.wakeUp();
 				this.tripletnotes.wakeUp();
 			}.bind(this)).play();
@@ -344,7 +387,7 @@ phina.define('MainScene', {
 			}
 		}.bind(this);
 		console.time("import");
-		this.json = JSON.parse(score);
+		this.json = score;
 		this.json.map.forIn(function(key, value) {
 			this.notesdata[key] = [];
 			this.tripletnotesdata[key] = [];
@@ -468,28 +511,11 @@ phina.define('MainScene', {
 			}
 		}, this);
 
-		console.time("copy");
-		var temp = document.createElement('textarea');
+		var json = JSON.stringify(this.json, null, "  ");
 
-		temp.value = JSON.stringify(this.json, null, "  ");
-		temp.selectionStart = 0;
-		temp.selectionEnd = temp.value.length;
-
-		var s = temp.style;
-		s.position = 'fixed';
-		s.left = '-100%';
-
-		document.body.appendChild(temp);
-		temp.focus();
-		var result = document.execCommand('copy');
-		temp.blur();
-		document.body.removeChild(temp);
-		console.timeEnd("copy");
 		console.timeEnd("export");
-		if (result) {
-		} else {
-			console.log("export failed!");
-		}
+
+		return json;
 	}
 });
 
