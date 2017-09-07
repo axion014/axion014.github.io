@@ -29,7 +29,7 @@ var LONG_END = 4;
 
 function colorOf(id) {
 	if (id === NOTHING) return 'black';
-	else if (id === NORMAL) return '#0000aa';
+	else if (id === NORMAL) return '#2222bb';
 	else if (id === ATTACK) return '#aa0000';
 	else if (id === LONG_START) return '#aaaa00';
 	else if (id === LONG_END) return '#00aaaa';
@@ -88,15 +88,24 @@ phina.define('MainScene', {
 			this.updateTime();
 		}.bind(this)).addChildTo(this.score);
 		this.s = Infiniteof(function(i) {
-			if (!this.lengths[this.level].sum.includes(-i) && i !== 0) return Element();
-			var group = DisplayElement();
-			PathShape({paths: [Vector2(-1000, 0), Vector2(1000, 0)], y: 29}).addChildTo(group);
-			Label({
-				x: -360, y: 14,
-				text: i === 0 ? 0 : this.lengths[this.level].sum.indexOf(-i) + 1,
-				fontFamily: "Nova Mono"
-			}).addChildTo(group);
-			return group;
+			i = -i;
+			if (this.lengths[this.level].sum.includes(i) || i === 0) {
+				var group = DisplayElement();
+				PathShape({paths: [Vector2(-1000, 0), Vector2(1000, 0)], y: 29}).addChildTo(group);
+				Label({
+					x: -360, y: 14,
+					text: i === 0 ? 0 : this.lengths[this.level].sum.indexOf(i) + 1,
+					fontFamily: "Nova Mono"
+				}).addChildTo(group);
+				return group;
+			}
+			for (var j = 0; j < this.lengths[this.level].length; j++) {
+				if (this.lengths[this.level].sum[j] > i) {
+					if (this.lengths[this.level].diff[j] % 4 === 0 && (i - (j === 0 ? 0 : this.lengths[this.level].sum[j - 1])) % 4 === 3) return PathShape({paths: [Vector2(-1000, 0), Vector2(1000, 0)], strokeWidth: 1, stroke: '#cccccc'});
+					return Element();
+				}
+			}
+			return Element();
 		}.bind(this), Vector2(0, 30)).addChildTo(this.score);
 		this.notes = Infiniteof(function(i) {
 			if (!this.notesdata[this.level][-i]) this.notesdata[this.level][-i] = [0, 0, 0, 0];
@@ -346,6 +355,7 @@ phina.define('MainScene', {
 
 		this.updateGraphY();
 		if (updategraph !== false) this.updateDencityGraph();
+		this.updateNotesCount();
 	},
 	updateNotesCount: function() {
 		// 4 / 60 = 1 / 15
@@ -354,7 +364,6 @@ phina.define('MainScene', {
 	},
 	fullUpdate: function() {
 		this.updateTime(false);
-		this.updateNotesCount();
 		this.notes.reset();
 		this.tripletnotes.reset();
 	},
