@@ -27,6 +27,11 @@ var ATTACK = 2;
 var LONG_START = 3;
 var LONG_END = 4;
 
+var START = 5;
+var END = 6;
+
+var LANES = [0, 1, 2, 3, "bind", "random"];
+
 function colorOf(id) {
 	if (id === NOTHING) return 'black';
 	else if (id === NORMAL) return '#2222bb';
@@ -108,7 +113,11 @@ phina.define('MainScene', {
 			return Element();
 		}.bind(this), Vector2(0, 30)).addChildTo(this.score);
 		this.notes = Infiniteof(function(i) {
-			if (!this.notesdata[this.level][-i]) this.notesdata[this.level][-i] = [0, 0, 0, 0];
+			if (!this.notesdata[this.level][-i]) {
+				this.notesdata[this.level][-i] = [0, 0, 0, 0];
+				this.notesdata[this.level][-i].bind = NOTHING;
+				this.notesdata[this.level][-i].random = NOTHING;
+			}
 			var group = DisplayElement();
 			if (this.lengths[this.level].sum.includes(-i + 1)) {
 				Button({x: -140, y: 24, text: "+", width: 36, height: 36}).on("pointstart", function() {
@@ -128,22 +137,22 @@ phina.define('MainScene', {
 			}
 			var self = this;
 			var flag = false;
-			for (var j = 0; j < 4; j++) {
-				if (this.tripletnotesdata[this.level][Math.floor(-i / 2) * 3] && this.tripletnotesdata[this.level][Math.floor(-i / 2) * 3][j] !== 0 || this.tripletnotesdata[this.level][Math.floor(-i / 2) * 3 + 1] && this.tripletnotesdata[this.level][Math.floor(-i / 2) * 3 + 1][j] !== 0 || this.tripletnotesdata[this.level][Math.floor(-i / 2) * 3 + 2] && this.tripletnotesdata[this.level][Math.floor(-i / 2) * 3 + 2][j] !== 0) flag = true;
-			}
+			LANES.each(function (lane) {
+				if (this.tripletnotesdata[this.level][Math.floor(-i / 2) * 3] && this.tripletnotesdata[this.level][Math.floor(-i / 2) * 3][lane] !== NOTHING || this.tripletnotesdata[this.level][Math.floor(-i / 2) * 3 + 1] && this.tripletnotesdata[this.level][Math.floor(-i / 2) * 3 + 1][lane] !== NOTHING || this.tripletnotesdata[this.level][Math.floor(-i / 2) * 3 + 2] && this.tripletnotesdata[this.level][Math.floor(-i / 2) * 3 + 2][lane] !== NOTHING) flag = true;
+			}, this);
 			if (flag) for (j = 0; j < 4; j++) {
 				RectangleShape({x: -90 + j * 60, y: 14, width: 50, height: 25, fill: "#666666", stroke: null}).addChildTo(group);
 			} else for (var j = 0; j < 4; j++) {
 				RectangleShape({x: -90 + j * 60, y: 14, width: 50, height: 25, fill: colorOf(this.notesdata[this.level][-i][j]), stroke: null}).on("pointstart",
 				function() {
-					if (self.notesdata[self.level][this.i][this.j]) {
+					if (self.notesdata[self.level][this.i][this.lane]) {
 						self.notesCount[self.level]--;
 						self.notesCountofBar[self.level][Math.floor(this.i / 16)]--;
-						if (self.notesdata[self.level][this.i][this.j] === ATTACK) {
+						if (self.notesdata[self.level][this.i][this.lane] === ATTACK) {
 							self.attackNotesCount[self.level]--;
 							self.attackNotesCountofBar[self.level][Math.floor(this.i / 16)]--;
 						}
-						self.notesdata[self.level][this.i][this.j] = 0;
+						self.notesdata[self.level][this.i][this.lane] = NOTHING;
 					} else {
 						self.notesCount[self.level]++;
 						self.notesCountofBar[self.level][Math.floor(this.i / 16)]++;
@@ -151,36 +160,40 @@ phina.define('MainScene', {
 							self.attackNotesCount[self.level]++;
 							self.attackNotesCountofBar[self.level][Math.floor(this.i / 16)]++;
 						}
-						self.notesdata[self.level][this.i][this.j] = self.notetype;
+						self.notesdata[self.level][this.i][this.lane] = self.notetype;
 					}
-					this.fill = colorOf(self.notesdata[self.level][this.i][this.j]);
+					this.fill = colorOf(self.notesdata[self.level][this.i][this.lane]);
 					self.updateNotesCount();
 					self.tripletnotes.reset();
-				}).$safe({i: -i, j: j}).setInteractive(true).addChildTo(group);
+				}).$safe({i: -i, lane: j}).setInteractive(true).addChildTo(group);
 			}
 			return group;
 		}.bind(this), Vector2(0, 30)).addChildTo(this.score);
 		this.tripletnotes = Infiniteof(function(i) {
-			if (!this.tripletnotesdata[this.level][-i]) this.tripletnotesdata[this.level][-i] = [0, 0, 0, 0];
+			if (!this.tripletnotesdata[this.level][-i]) {
+				this.tripletnotesdata[this.level][-i] = [0, 0, 0, 0];
+				this.tripletnotesdata[this.level][-i].bind = NOTHING;
+				this.tripletnotesdata[this.level][-i].random = NOTHING;
+			}
 			var group = DisplayElement();
 			var self = this;
 			var flag = false;
-			for (var j = 0; j < 4; j++) {
-				if (this.notesdata[this.level][Math.floor(-i / 3) * 2] && this.notesdata[this.level][Math.floor(-i / 3) * 2][j] !== 0 || this.notesdata[this.level][Math.floor(-i / 3) * 2 + 1] && this.notesdata[this.level][Math.floor(-i / 3) * 2 + 1][j] !== 0) flag = true;
-			}
+			LANES.each(function (lane) {
+				if (this.notesdata[this.level][Math.floor(-i / 3) * 2] && this.notesdata[this.level][Math.floor(-i / 3) * 2][lane] !== NOTHING || this.notesdata[this.level][Math.floor(-i / 3) * 2 + 1] && this.notesdata[this.level][Math.floor(-i / 3) * 2 + 1][lane] !== NOTHING) flag = true;
+			}, this);
 			if (flag) for (j = 0; j < 4; j++) {
 				RectangleShape({x: -90 + j * 60, y: 8, width: 50, height: 16, fill: "#666666", stroke: null}).addChildTo(group);
 			} else for (j = 0; j < 4; j++) {
 				RectangleShape({x: -90 + j * 60, y: 8, width: 50, height: 16, fill: colorOf(this.tripletnotesdata[this.level][-i][j]), stroke: null}).on("pointstart",
 				function() {
-					if (self.tripletnotesdata[self.level][this.i][this.j]) {
+					if (self.tripletnotesdata[self.level][this.i][this.lane]) {
 						self.notesCount[self.level]--;
 						self.notesCountofBar[self.level][Math.floor(this.i / 24)]--;
-						if (self.tripletnotesdata[self.level][this.i][this.j] === ATTACK) {
+						if (self.tripletnotesdata[self.level][this.i][this.lane] === ATTACK) {
 							self.attackNotesCount[self.level]--;
 							self.attackNotesCountofBar[self.level][Math.floor(this.i / 24)]--;
 						}
-						self.tripletnotesdata[self.level][this.i][this.j] = 0;
+						self.tripletnotesdata[self.level][this.i][this.lane] = NOTHING;
 					} else {
 						self.notesCount[self.level]++;
 						self.notesCountofBar[self.level][Math.floor(this.i / 24)]++;
@@ -188,12 +201,12 @@ phina.define('MainScene', {
 							self.attackNotesCountofBar[self.level][Math.floor(this.i / 24)]++;
 							self.attackNotesCount[self.level]++;
 						}
-						self.tripletnotesdata[self.level][this.i][this.j] = self.notetype;
+						self.tripletnotesdata[self.level][this.i][this.lane] = self.notetype;
 					}
-					this.fill = colorOf(self.tripletnotesdata[self.level][this.i][this.j]);
+					this.fill = colorOf(self.tripletnotesdata[self.level][this.i][this.lane]);
 					self.updateNotesCount();
 					self.notes.reset();
-				}).$safe({i: -i, j: j}).setInteractive(true).addChildTo(group);
+				}).$safe({i: -i, lane: j}).setInteractive(true).addChildTo(group);
 			}
 			return group;
 		}.bind(this), Vector2(0, this.notes.pitch.y / 3 * 2), {x: 120}).hide().addChildTo(this.score);
@@ -373,6 +386,8 @@ phina.define('MainScene', {
 			if (ch === "5" || ch === "6" || ch === "7" || ch === "8") return ATTACK;
 			if (ch === "a" || ch === "b" || ch === "c" || ch === "d") return LONG_START;
 			if (ch === "e" || ch === "f" || ch === "g" || ch === "h") return LONG_END;
+			if (ch === "[" || ch === "{") return START;
+			if (ch === "]" || ch === "}") return END;
 			throw new Error("invaild note!");
 		}
 		function laneOf(ch) {
@@ -380,16 +395,18 @@ phina.define('MainScene', {
 			if (ch === "2" || ch === "6" || ch === "b" || ch === "f") return 1;
 			if (ch === "3" || ch === "7" || ch === "c" || ch === "g") return 2;
 			if (ch === "4" || ch === "8" || ch === "d" || ch === "h") return 3;
+			if (ch === "[" || ch === "]") return "bind";
+			if (ch === "{" || ch === "}") return "random";
 			throw new Error("invaild lane!");
 		}
 		function isVaild(ch) {
-			return ch === "1" || ch === "2" || ch === "3" || ch === "4" || ch === "5" || ch === "6" || ch === "7" || ch === "8" || ch === "a" || ch === "b" || ch === "c" || ch === "d" || ch === "e" || ch === "f" || ch === "g" || ch === "h";
+			return ch === "1" || ch === "2" || ch === "3" || ch === "4" || ch === "5" || ch === "6" || ch === "7" || ch === "8" || ch === "a" || ch === "b" || ch === "c" || ch === "d" || ch === "e" || ch === "f" || ch === "g" || ch === "h" || ch === "[" || ch === "]" || ch === "{" || ch === "}";
 		}
-		var increment = function(key, ii, attack) {
+		var increment = function(key, ii, type) {
 			this.notesCount[key]++;
 			if(!this.notesCountofBar[key][Math.floor(ii / 16)]) this.notesCountofBar[key][Math.floor(ii / 16)] = 0;
 			this.notesCountofBar[key][Math.floor(ii / 16)]++;
-			if (attack) {
+			if (type === ATTACK) {
 				this.attackNotesCount[key]++;
 				if(!this.attackNotesCountofBar[key][Math.floor(ii / 16)]) this.attackNotesCountofBar[key][Math.floor(ii / 16)] = 0;
 				this.attackNotesCountofBar[key][Math.floor(ii / 16)]++;
@@ -410,11 +427,16 @@ phina.define('MainScene', {
 				value[i] = value[i].split(",");
 				for (var j = 0, jj = 0; j < value[i].length; j++) {
 					this.notesdata[key][ii] = [0, 0, 0, 0];
+					this.notesdata[key][ii].bind = NOTHING;
+					this.notesdata[key][ii].random = NOTHING;
 					if (value[i][j].includes("(") || nextTriplet) {
 						nextTriplet = false;
 						p:
 						for (var k = 0;; k++) { // )か小節区切りまでループ
-							this.tripletnotesdata[key][ij / 2 + k] = [0, 0, 0, 0];
+							var ik = ij / 2 + k;
+							this.tripletnotesdata[key][ik] = [0, 0, 0, 0];
+							this.tripletnotesdata[key][ik].bind = NOTHING;
+							this.tripletnotesdata[key][ik].random = NOTHING;
 							if(value[i][j] === undefined) {
 								nextTriplet = true;
 								break;
@@ -429,10 +451,10 @@ phina.define('MainScene', {
 									if(value[i][j + 1] === undefined && value[i + 1] === undefined) k++;
 									break p;
 								}
-								if(isVaild(ch) && this.tripletnotesdata[key][ij / 2 + k][laneOf(ch)] === NOTHING) {
+								if(isVaild(ch) && this.tripletnotesdata[key][ik][laneOf(ch)] === NOTHING) {
 									var type = dataOf(ch);
-									increment(key, ii, type === ATTACK);
-									this.tripletnotesdata[key][ij / 2 + k][laneOf(ch)] = type;
+									increment(key, ii, type);
+									this.tripletnotesdata[key][ik][laneOf(ch)] = type;
 								}
 							}
 							j++;
@@ -446,7 +468,7 @@ phina.define('MainScene', {
 							var ch = value[i][j].charAt(k);
 							if(isVaild(ch) && this.notesdata[key][ii][laneOf(ch)] === NOTHING) {
 								var type = dataOf(ch);
-								increment(key, ii, type === ATTACK);
+								increment(key, ii, type);
 								this.notesdata[key][ii][laneOf(ch)] = type;
 							}
 						}
@@ -474,7 +496,10 @@ phina.define('MainScene', {
 			if (data === ATTACK) return lane + 5;
 			if (data === LONG_START) return ["a", "b", "c", "d"][lane];
 			if (data === LONG_END) return ["e", "f", "g", "h"][lane];
-			throw new Error("invaild data!");
+
+			if (data === START) return {bind: "[", random: "{"}[lane];
+			if (data === END) return {bind: "]", random: "}"}[lane];
+			throw new Error("invaild data: " + data);
 		}
 		console.time("export");
 		["easy", "normal", "hard"].each(function(level) {
@@ -489,21 +514,21 @@ phina.define('MainScene', {
 						data += ")";
 						putrightparenthese = false;
 					}
-					if (this.notesdata[level][j]) for(var k = 0; k < 4; k++) {
-						data += codeOf(this.notesdata[level][j][k], k);
-					}
+					if (this.notesdata[level][j]) LANES.each(function (lane) {
+						data += codeOf(this.notesdata[level][j][lane], lane);
+					}, this);
 					if (j % 2 === 0 && j < o + this.lengths[level].diff[i] - 1) {
-						if (this.notesdata[level][j]) {
-							for(var k = 0; k < 4; k++) if (this.notesdata[level][j][k] !== NOTHING) continue t;
-						}
-						if (this.notesdata[level][j + 1]) {
-							for(var k = 0; k < 4; k++) if (this.notesdata[level][j + 1][k] !== NOTHING) continue t;
-						}
+						if (this.notesdata[level][j]) if (LANES.some(function (lane) {
+							return this.notesdata[level][j][lane] !== NOTHING;
+						}, this)) continue;
+						if (this.notesdata[level][j + 1]) if (LANES.some(function (lane) {
+							return this.notesdata[level][j + 1][lane] !== NOTHING;
+						}, this)) continue;
 						data += "("
 						for(var k = 0;; k++) {
-							if (this.tripletnotesdata[level][j * 3 / 2 + k]) for(var l = 0; l < 4; l++) {
-								data += codeOf(this.tripletnotesdata[level][j * 3 / 2 + k][l], l);
-							}
+							if (this.tripletnotesdata[level][j * 3 / 2 + k]) LANES.each(function (lane) {
+								data += codeOf(this.tripletnotesdata[level][j * 3 / 2 + k][lane], lane);
+							}, this);
 							if (k === 2) break;
 							data += ",";
 						}
