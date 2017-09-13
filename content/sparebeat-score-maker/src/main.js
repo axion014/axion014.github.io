@@ -415,6 +415,7 @@ phina.define('MainScene', {
 		console.time("import");
 		this.json = score;
 		this.json.map.forIn(function(key, value) {
+			console.log("importing " + key)
 			this.notesdata[key] = [];
 			this.tripletnotesdata[key] = [];
 			this.notesCount[key] = 0;
@@ -422,40 +423,47 @@ phina.define('MainScene', {
 			this.attackNotesCount[key] = 0;
 			this.attackNotesCountofBar[key] = [];
 			this.lengths[key].clear();
-			var ii = 0, ij = 0, nextTriplet = false;
+			var ii = 0, ij = 0, nextTriplet = -1;
 			for (var i = 0; i < value.length; i++) {
 				value[i] = value[i].split(",");
 				for (var j = 0, jj = 0; j < value[i].length; j++) {
 					this.notesdata[key][ii] = [0, 0, 0, 0];
 					this.notesdata[key][ii].bind = NOTHING;
 					this.notesdata[key][ii].random = NOTHING;
-					if (value[i][j].includes("(") || nextTriplet) {
-						nextTriplet = false;
-						p:
+					if (value[i][j].includes("(") || nextTriplet >= 0) {
+						var nowTriplet = Math.max(nextTriplet, 0);
+						nextTriplet = -1;
 						for (var k = 0;; k++) { // )か小節区切りまでループ
 							var ik = ij / 2 + k;
 							this.tripletnotesdata[key][ik] = [0, 0, 0, 0];
 							this.tripletnotesdata[key][ik].bind = NOTHING;
 							this.tripletnotesdata[key][ik].random = NOTHING;
 							if(value[i][j] === undefined) {
-								nextTriplet = true;
+								nextTriplet = k % 3;
 								break;
 							}
+							var tripletEnd = false;
 							for(var l = 0; l < value[i][j].length; l++) {
 								var ch = value[i][j].charAt(l);
-								if(ch === ")") {
-									if (k % 3 === 0) { // かっこまでを取り除いてやり直し
-										value[i][j] = value[i][j].replace(/^.*?\)/, "");
-										j--;
-									}
-									if(value[i][j + 1] === undefined && value[i + 1] === undefined) k++;
-									break p;
-								}
+								if(!tripletEnd && ch === ")") tripletEnd = true;
+								if (tripletEnd && ch === "(") tripletEnd = false;
+							}
+							if (tripletEnd && (k + nowTriplet) % 3 === 0) {
+								j--; // 三連符が8分のタイミングで終わる時は通常の8分にする
+								break;
+							} else for(l = 0; l < value[i][j].length; l++) {
+								var ch = value[i][j].charAt(l);
 								if(isVaild(ch) && this.tripletnotesdata[key][ik][laneOf(ch)] === NOTHING) {
 									var type = dataOf(ch);
 									increment(key, ii, type);
 									this.tripletnotesdata[key][ik][laneOf(ch)] = type;
 								}
+							}
+							if (tripletEnd) {
+								jj++;
+								ii++;
+								ij += 2;
+								break;
 							}
 							j++;
 							ii += 2 / 3;
@@ -477,7 +485,7 @@ phina.define('MainScene', {
 						ij += 3;
 					}
 				}
-				this.lengths[key].push(jj);
+				this.lengths[key].push(Math.round(jj));
 			}
 			for (;i < 5; i++) this.lengths[key].push(16);
 			this.time[key] = Math.max(i, 5);
