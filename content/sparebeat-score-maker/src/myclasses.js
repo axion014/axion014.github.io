@@ -4,7 +4,7 @@ phina.define("Infiniteof", {
     this.superInit(options);
     this.source = source;
     this.pitch = pitch;
-		this.reset();
+    this.reset();
   },
   draw: function() {
     var scene = this.getRoot();
@@ -13,46 +13,46 @@ phina.define("Infiniteof", {
     var base = this.pitch.clone().mul(backrate + 1);
     for(var pos = this.pitch.clone().mul(backrate - 1), i = 0; pos.x - base.x < scene.width && pos.y - base.y < scene.height;
         pos = pos.clone().add(this.pitch), i++) {
-			if (i + backrate >= this.nodemin && i + backrate < this.nodemax) continue;
+      if (i + backrate >= this.nodemin && i + backrate < this.nodemax) continue;
       var node = this.source(i + backrate).addChildTo(this);
-			node.position = pos;
-			node._i = i + backrate;
+      node.position = pos;
+      node._i = i + backrate;
 
-			scene.app.updater.update(node);
+      scene.app.updater.update(node);
     }
-		this.children.each(function(child) {
-			(child._i < backrate || child._i > i + backrate) && child.has('removed') && child.flare('removed');
-		});
+    this.children.each(function(child) {
+      (child._i < backrate || child._i > i + backrate) && child.has('removed') && child.flare('removed');
+    });
     this.children = this.children.filter(function(child) {
-			return child._i >= backrate && child._i < i + backrate;
-		});
-		this.nodemin = backrate;
-		this.nodemax = i + backrate;
+      return child._i >= backrate && child._i < i + backrate;
+    });
+    this.nodemin = backrate;
+    this.nodemax = i + backrate;
   },
-	reset: function() {
-		this.nodemin = Infinity;
-		this.nodemax = -Infinity;
-		this.children.each(function(child) {
-			child.has('removed') && child.flare('removed');
-		});
+  reset: function() {
+    this.nodemin = Infinity;
+    this.nodemax = -Infinity;
+    this.children.each(function(child) {
+      child.has('removed') && child.flare('removed');
+    });
     this.children = [];
-	}
+  }
 });
 
 phina.define("List", {
   superClass: 'phina.display.DisplayElement',
-	renderChildBySelf: true,
+  renderChildBySelf: true,
   init: function(vertical, padding, options) {
     this.superInit(options);
     this.vertical = vertical;
     this.padding = padding;
   },
   draw: function(canvas) {
-		var renderer = phina.display.CanvasRenderer(canvas);
-		// Rendererのコピペ
-		var length = 0;
-		this.children.each(function(obj) {
-			if (obj.visible === false && !obj.interactive) return;
+    var renderer = phina.display.CanvasRenderer(canvas);
+    // Rendererのコピペ
+    var length = 0;
+    this.children.each(function(obj) {
+      if (obj.visible === false && !obj.interactive) return;
 
       obj._calcWorldMatrix && obj._calcWorldMatrix();
 
@@ -65,15 +65,17 @@ phina.define("List", {
       context.globalAlpha = obj._worldAlpha;
       context.globalCompositeOperation = obj.blendMode;
 
+      length += (this.vertical ? obj.height * obj.scaleY * obj.originY : obj.width * obj.scaleX * obj.originX);
+
       if (obj._worldMatrix) {
         // 行列をセット
         var m = obj._worldMatrix;
-				if (this.vertical) {
-					m.m12 = this._worldMatrix.m12 + length;
-				} else {
-					m.m02 = this._worldMatrix.m02 + length;
-				}
-        context.setTransform( m.m00, m.m10, m.m01, m.m11, m.m02, m.m12);
+        if (this.vertical) {
+          m.m12 = this._worldMatrix.m12 + length;
+        } else {
+          m.m02 = this._worldMatrix.m02 + length;
+        }
+        canvas.setTransform( m.m00, m.m10, m.m01, m.m11, m.m02, m.m12);
       }
 
       if (obj.clip) {
@@ -87,10 +89,10 @@ phina.define("List", {
 
         // 子供たちも実行
         if (obj.renderChildBySelf === false && obj.children.length > 0) {
-            var tempChildren = obj.children.slice();
-            for (var i=0,len=tempChildren.length; i<len; ++i) {
-                renderer.renderObject(tempChildren[i]);
-            }
+          var tempChildren = obj.children.slice();
+          for (var i=0,len=tempChildren.length; i<len; ++i) {
+            renderer.renderObject(tempChildren[i]);
+          }
         }
 
         context.restore();
@@ -107,8 +109,8 @@ phina.define("List", {
         }
 
       }
-			length += (this.vertical ? obj.height * obj.scaleY : obj.width * obj.scaleX) + this.padding;
-		}, this);
+      length += (this.vertical ? obj.height * obj.scaleY * (1 - obj.originY) : obj.width * obj.scaleX * (1 - obj.originX)) + this.padding;
+    }, this);
   }
 });
 
