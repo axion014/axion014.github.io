@@ -9,26 +9,30 @@ phina.define("Infiniteof", {
   draw: function() {
     var scene = this.getRoot();
     var globalpos = this.globalPosition;
-    var backrate = -Math.floor(Math.min(globalpos.x / this.pitch.x, globalpos.y / this.pitch.y));
+    var backrate = -Math.floor(Math.min((globalpos.x - (this.pitch.x < 0 ? scene.width : 0)) / this.pitch.x, (globalpos.y - (this.pitch.y < 0 ? scene.height : 0)) / this.pitch.y));
     var base = this.pitch.clone().mul(backrate + 1);
-    for(var pos = this.pitch.clone().mul(backrate - 1), i = 0; pos.x - base.x < scene.width && pos.y - base.y < scene.height;
-        pos = pos.clone().add(this.pitch), i++) {
+    for(var pos = this.pitch.clone().mul(backrate - 1), i = -1; pos.x - base.x < scene.width && pos.x - base.x > -scene.width && pos.y - base.y < scene.height && pos.y - base.y > -scene.height;
+        pos.add(this.pitch), i++) {
       if (i + backrate >= this.nodemin && i + backrate < this.nodemax) continue;
       var node = this.source(i + backrate).addChildTo(this);
-      node.position = pos;
+      node.position = pos.clone();
       node._i = i + backrate;
 
       scene.app.updater.update(node);
     }
-    this.children.each(function(child) {
-      (child._i < backrate || child._i > i + backrate) && child.has('removed') && child.flare('removed');
-    });
-    this.children = this.children.filter(function(child) {
-      return child._i >= backrate && child._i < i + backrate;
-    });
-    this.nodemin = backrate;
+    this.nodemin = backrate - 1;
     this.nodemax = i + backrate;
+    this.children.each(function(child) {
+      (child._i < this.nodemin || child._i > this.nodemax) && child.has('removed') && child.flare('removed');
+    }, this);
+    this.children = this.children.filter(function(child) {
+      return child._i >= this.nodemin && child._i <= this.nodemax;
+    }, this);
   },
+  /*
+   * 外部からsource関数/source関数が読み取る変数が変更された際、
+   * これを実行しないと古い返り値が残って、表示が更新されない。
+   */
   reset: function() {
     this.nodemin = Infinity;
     this.nodemax = -Infinity;

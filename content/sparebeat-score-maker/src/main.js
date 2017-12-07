@@ -95,12 +95,11 @@ phina.define('MainScene', {
       this.save();
     }.bind(this)).addChildTo(this.score);
     this.s = Infiniteof(function(i) {
-      i = -i;
       if (this.lengths[this.level].sum.includes(i) || i === 0) {
         var group = DisplayElement();
-        PathShape({paths: [Vector2(-1000, 0), Vector2(1000, 0)], y: 29}).addChildTo(group);
+        PathShape({paths: [Vector2(-1000, 0), Vector2(1000, 0)]}).addChildTo(group);
         Label({
-          x: -360, y: 14,
+          x: -360, y: -14,
           text: i === 0 ? 0 : this.lengths[this.level].sum.indexOf(i) + 1,
           fontFamily: "Nova Mono"
         }).addChildTo(group);
@@ -108,31 +107,31 @@ phina.define('MainScene', {
       }
       for (var j = 0; j < this.lengths[this.level].length; j++) {
         if (this.lengths[this.level].sum[j] > i) {
-          if (this.lengths[this.level].diff[j] % 4 === 0 && (i - (j === 0 ? 0 : this.lengths[this.level].sum[j - 1])) % 4 === 3) return PathShape({paths: [Vector2(-1000, 0), Vector2(1000, 0)], y: -1, strokeWidth: 1, stroke: '#cccccc'});
+          if (this.lengths[this.level].diff[j] % 4 === 0 && (i - (j === 0 ? 0 : this.lengths[this.level].sum[j - 1])) % 4 === 0) return PathShape({paths: [Vector2(-1000, 0), Vector2(1000, 0)], y: -1, strokeWidth: 1, stroke: '#cccccc'});
           return Element();
         }
       }
       return Element();
-    }.bind(this), Vector2(0, 30)).addChildTo(this.score);
+    }.bind(this), Vector2(0, -30)).addChildTo(this.score);
     this.notes = Infiniteof(function(i) {
-      if (!this.notesdata[this.level][-i]) {
-        this.notesdata[this.level][-i] = [NOTHING, NOTHING, NOTHING, NOTHING];
-        this.notesdata[this.level][-i].bind = NOTHING;
-        this.notesdata[this.level][-i].random = NOTHING;
+      if (!this.notesdata[this.level][i]) {
+        this.notesdata[this.level][i] = [NOTHING, NOTHING, NOTHING, NOTHING];
+        this.notesdata[this.level][i].bind = NOTHING;
+        this.notesdata[this.level][i].random = NOTHING;
       }
       var group = DisplayElement();
-      if (this.lengths[this.level].sum.includes(-i + 1)) {
-        Button({x: -140, y: 24, text: "+", width: 36, height: 36}).on("pointstart", function() {
-          var index = this.lengths[this.level].sum.indexOf(-i + 1);
+      if (this.lengths[this.level].sum.includes(i + 1)) {
+        Button({x: -140, y: -8, text: "+", width: 36, height: 36}).on("pointstart", function() {
+          var index = this.lengths[this.level].sum.indexOf(i + 1);
           this.lengths[this.level].set(index, this.lengths[this.level].diff[index] + 1);
           this.notes.reset();
           this.updateTime();
           this.save();
         }.bind(this)).addChildTo(group);
       }
-      if (this.lengths[this.level].sum.includes(-i + 3)) {
-        Button({x: -140, y: 8, text: "-", width: 36, height: 36}).on("pointstart", function() {
-          var index = this.lengths[this.level].sum.indexOf(-i + 3);
+      if (this.lengths[this.level].sum.includes(i + 3)) {
+        Button({x: -140, y: -24, text: "-", width: 36, height: 36}).on("pointstart", function() {
+          var index = this.lengths[this.level].sum.indexOf(i + 3);
           this.lengths[this.level].set(index, this.lengths[this.level].diff[index] - 1);
           this.notes.reset();
           this.updateTime();
@@ -142,12 +141,12 @@ phina.define('MainScene', {
       var self = this;
       var flag = false;
       LANES.each(function (lane) {
-        if (this.tripletnotesdata[this.level][Math.floor(-i / 2) * 3] && this.tripletnotesdata[this.level][Math.floor(-i / 2) * 3][lane] !== NOTHING || this.tripletnotesdata[this.level][Math.floor(-i / 2) * 3 + 1] && this.tripletnotesdata[this.level][Math.floor(-i / 2) * 3 + 1][lane] !== NOTHING || this.tripletnotesdata[this.level][Math.floor(-i / 2) * 3 + 2] && this.tripletnotesdata[this.level][Math.floor(-i / 2) * 3 + 2][lane] !== NOTHING) flag = true;
+        if (this.tripletnotesdata[this.level][Math.floor(i / 2) * 3] && this.tripletnotesdata[this.level][Math.floor(i / 2) * 3][lane] !== NOTHING || this.tripletnotesdata[this.level][Math.floor(i / 2) * 3 + 1] && this.tripletnotesdata[this.level][Math.floor(i / 2) * 3 + 1][lane] !== NOTHING || this.tripletnotesdata[this.level][Math.floor(i / 2) * 3 + 2] && this.tripletnotesdata[this.level][Math.floor(i / 2) * 3 + 2][lane] !== NOTHING) flag = true;
       }, this);
       if (flag) for (j = 0; j < 4; j++) {
-        RectangleShape({x: -90 + j * 60, y: 14, width: 50, height: 25, fill: "#666666", stroke: null}).addChildTo(group);
+        RectangleShape({x: j * 60 - 90, y: -15, width: 50, height: 25, fill: "#666666", stroke: null}).addChildTo(group);
       } else for (var j = 0; j < 4; j++) {
-        RectangleShape({x: -90 + j * 60, y: 14, width: 50, height: 25, fill: colorOf(this.notesdata[this.level][-i][j]), stroke: null}).on("pointstart",
+        RectangleShape({x: j * 60 - 90, y: -15, width: 50, height: 25, fill: colorOf(this.notesdata[this.level][i][j]), stroke: null}).on("pointstart",
         function() {
           if (self.notesdata[self.level][this.i][this.lane]) {
             self.notesCount[self.level]--;
@@ -170,26 +169,26 @@ phina.define('MainScene', {
           self.updateNotesCount();
           self.save();
           self.tripletnotes.reset();
-        }).$safe({i: -i, lane: j}).setInteractive(true).addChildTo(group);
+        }).$safe({i: i, lane: j}).setInteractive(true).addChildTo(group);
       }
       return group;
-    }.bind(this), Vector2(0, 30)).addChildTo(this.score);
+    }.bind(this), Vector2(0, this.s.pitch.y)).addChildTo(this.score);
     this.tripletnotes = Infiniteof(function(i) {
-      if (!this.tripletnotesdata[this.level][-i]) {
-        this.tripletnotesdata[this.level][-i] = [NOTHING, NOTHING, NOTHING, NOTHING];
-        this.tripletnotesdata[this.level][-i].bind = NOTHING;
-        this.tripletnotesdata[this.level][-i].random = NOTHING;
+      if (!this.tripletnotesdata[this.level][i]) {
+        this.tripletnotesdata[this.level][i] = [NOTHING, NOTHING, NOTHING, NOTHING];
+        this.tripletnotesdata[this.level][i].bind = NOTHING;
+        this.tripletnotesdata[this.level][i].random = NOTHING;
       }
       var group = DisplayElement();
       var self = this;
       var flag = false;
       LANES.each(function (lane) {
-        if (this.notesdata[this.level][Math.floor(-i / 3) * 2] && this.notesdata[this.level][Math.floor(-i / 3) * 2][lane] !== NOTHING || this.notesdata[this.level][Math.floor(-i / 3) * 2 + 1] && this.notesdata[this.level][Math.floor(-i / 3) * 2 + 1][lane] !== NOTHING) flag = true;
+        if (this.notesdata[this.level][Math.floor(i / 3) * 2] && this.notesdata[this.level][Math.floor(i / 3) * 2][lane] !== NOTHING || this.notesdata[this.level][Math.floor(i / 3) * 2 + 1] && this.notesdata[this.level][Math.floor(i / 3) * 2 + 1][lane] !== NOTHING) flag = true;
       }, this);
       if (flag) for (j = 0; j < 4; j++) {
-        RectangleShape({x: -90 + j * 60, y: 8, width: 50, height: 16, fill: "#666666", stroke: null}).addChildTo(group);
+        RectangleShape({x: j * 60 - 90, y: -10, width: 50, height: 15, fill: "#666666", stroke: null}).addChildTo(group);
       } else for (j = 0; j < 4; j++) {
-        RectangleShape({x: -90 + j * 60, y: 8, width: 50, height: 16, fill: colorOf(this.tripletnotesdata[this.level][-i][j]), stroke: null}).on("pointstart",
+        RectangleShape({x: j * 60 - 90, y: -10, width: 50, height: 15, fill: colorOf(this.tripletnotesdata[this.level][i][j]), stroke: null}).on("pointstart",
         function() {
           if (self.tripletnotesdata[self.level][this.i][this.lane]) {
             self.notesCount[self.level]--;
@@ -212,10 +211,10 @@ phina.define('MainScene', {
           self.updateNotesCount();
           self.save();
           self.notes.reset();
-        }).$safe({i: -i, lane: j}).setInteractive(true).addChildTo(group);
+        }).$safe({i: i, lane: j}).setInteractive(true).addChildTo(group);
       }
       return group;
-    }.bind(this), Vector2(0, this.notes.pitch.y / 3 * 2), {x: 120}).hide().addChildTo(this.score);
+    }.bind(this), Vector2(0, this.s.pitch.y / 3 * 2), {x: 120}).hide().addChildTo(this.score);
     this.notesCountLabel = Label({
       text: "0 Notes\n0 Attack Notes\n0.00 Notes Per Second",
       fontSize: 22,
@@ -282,7 +281,7 @@ phina.define('MainScene', {
 
     this.on("enter", function(e) {
       e.app.domElement.addEventListener('wheel', function(e) {
-        this.score.y = Math.min(Math.max(this.score.y - e.deltaY * (e.deltaMode === 1 ? 35 : 1), 640), this.notes.pitch.y * this.lengths[this.level].totaltime);
+        this.score.y = Math.min(Math.max(this.score.y - e.deltaY * (e.deltaMode === 1 ? 35 : 1), 640), -this.notes.pitch.y * this.lengths[this.level].totaltime);
         this.updateGraphY();
       }.bind(this));
       e.app.domElement.addEventListener("dragover", function(event) {
@@ -332,7 +331,7 @@ phina.define('MainScene', {
   updateDencityGraph: function() {
     while (this.dencitygraph.children.length > this.notesCountofBar[this.level].length) this.dencitygraph.children.last.remove();
     while (this.dencitygraph.children.length < this.notesCountofBar[this.level].length) {
-      var group = DisplayElement({y: 631 - this.dencitygraph.children.length * 8}).addChildTo(this.dencitygraph)
+      var group = DisplayElement({y: 631 - this.dencitygraph.children.length * 8}).addChildTo(this.dencitygraph);
       group.normal = RectangleShape({
         height: 6,
         stroke: null
@@ -350,29 +349,28 @@ phina.define('MainScene', {
   },
   updateGraphY: function() {
     // 37080 = (629 - 6 - 10 / 2) * 60
-    var a = Math.min(32000 / (this.notes.pitch.y * this.lengths[this.level].totaltime - 640), 1);
+    var a = Math.min(32000 / (-this.notes.pitch.y * this.lengths[this.level].totaltime - 640), 1);
     this.currentpos.y = 629 - (this.score.y - 640) / 60 * a;
     this.dencitygraph.y = (this.score.y - 640) / 60 * (1 - a);
   },
   updateTime: function(updategraph) {
-    this.extend.y = -this.notes.pitch.y * this.lengths[this.level].totaltime + 40;
-    this.cut.y = this.extend.y + this.lengths[this.level].diff[this.lengths[this.level].length - 1] * this.notes.pitch.y;
-    if (this.score.y > this.notes.pitch.y * this.lengths[this.level].totaltime) {
+    this.extend.y = this.notes.pitch.y * this.lengths[this.level].totaltime + 40;
+    this.cut.y = this.extend.y - this.lengths[this.level].diff[this.lengths[this.level].length - 1] * this.notes.pitch.y;
+    if (this.score.y > -this.notes.pitch.y * this.lengths[this.level].totaltime) {
       this.notes.sleep();
       this.tripletnotes.sleep();
-      this.score.tweener.to({y: this.notes.pitch.y * this.lengths[this.level].totaltime}, 500, "easeOutQuad").call(function() {
+      this.score.tweener.to({y: -this.notes.pitch.y * this.lengths[this.level].totaltime}, 500, "easeOutQuad").call(function() {
         this.notes.wakeUp();
         this.tripletnotes.wakeUp();
       }.bind(this)).play();
     }
     this.s.reset();
-    for (var i = this.notesCountofBar[this.level].length; i < this.time[this.level]; i++) {
+    for (var i = this.notesCountofBar[this.level].length; i < Math.ceil(this.lengths[this.level].totaltime / 16); i++) {
       this.notesCountofBar[this.level][i] = 0;
       this.attackNotesCountofBar[this.level][i] = 0;
     }
 
     this.updateGraphY();
-    if (updategraph !== false) this.updateDencityGraph();
     this.updateNotesCount();
   },
   updateNotesCount: function() {
@@ -381,7 +379,7 @@ phina.define('MainScene', {
     this.updateDencityGraph();
   },
   fullUpdate: function() {
-    this.updateTime(false);
+    this.updateTime();
     this.notes.reset();
     this.tripletnotes.reset();
   },
