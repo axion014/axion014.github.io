@@ -138,68 +138,65 @@ phina.define('MainScene', {
           this.save();
         }.bind(this)).addChildTo(root);
       }
-			var group = DisplayElement({width: 225, height: 28, y: -15}).addChildTo(root);
-			var self = this;
+      var group = DisplayElement({width: 225, height: 28, y: -15}).addChildTo(root);
+      var self = this;
       if(LANES.some(function (lane) {
         return this.tripletnotesdata[this.level][Math.floor(i / 2) * 3] && this.tripletnotesdata[this.level][Math.floor(i / 2) * 3][lane] !== NOTHING || this.tripletnotesdata[this.level][Math.floor(i / 2) * 3 + 1] && this.tripletnotesdata[this.level][Math.floor(i / 2) * 3 + 1][lane] !== NOTHING || this.tripletnotesdata[this.level][Math.floor(i / 2) * 3 + 2] && this.tripletnotesdata[this.level][Math.floor(i / 2) * 3 + 2][lane] !== NOTHING;
-      }, this)) for (var j = 0; j < 4; j++) {
-        RectangleShape({x: j * 60 - 90, width: 50, height: 25, fill: "#666666", stroke: null}).addChildTo(group);
-      } else {
-				if (this.newZone) {
-					group.on('pointover', function() {
-						this.setScale(1.1);
-					}).on('pointout', function() {
-						this.setScale(1);
-					}).on('pointstart', function() {
-						this.notesdata[this.level][i][this.newZone.lane] = this.newZone.type;
-						editZones.interactive = true;
-						this.newZone.fill = Button.defaults.fill;
-						this.newZone = null;
-						this.notes.reset();
-						this.tripletnotes.reset();
-					}.bind(this)).setInteractive(true);
-				}
-				for (var j = 0; j < 4; j++) {
-	        var key = RectangleShape({x: j * 60 - 90, width: 50, height: 25, fill: colorOf(this.notesdata[this.level][i][j], this.newZone), stroke: null}).addChildTo(group);
-					if (!this.newZone) key.on("pointstart", function() {
-	          if (self.notesdata[self.level][this.i][this.lane]) {
-	            self.notesCount[self.level]--;
-	            self.notesCountofBar[self.level][Math.floor(this.i / 16)]--;
-	            if (self.notesdata[self.level][this.i][this.lane] === ATTACK) {
-	              self.attackNotesCount[self.level]--;
-	              self.attackNotesCountofBar[self.level][Math.floor(this.i / 16)]--;
-	            }
-	            self.notesdata[self.level][this.i][this.lane] = NOTHING;
-	          } else {
-	            self.notesCount[self.level]++;
-	            self.notesCountofBar[self.level][Math.floor(this.i / 16)]++;
-	            if (self.notetype === ATTACK) {
-	              self.attackNotesCount[self.level]++;
-	              self.attackNotesCountofBar[self.level][Math.floor(this.i / 16)]++;
-	            }
-	            self.notesdata[self.level][this.i][this.lane] = self.notetype;
-	          }
-	          this.fill = colorOf(self.notesdata[self.level][this.i][this.lane]);
-	          self.updateNotesCount();
-	          self.save();
-	          self.tripletnotes.reset();
-	        }).$safe({i: i, lane: j}).setInteractive(true);
-	      }
-				if (this.notesdata[this.level][i].bind) {
-					Label({x: -130, text: "["}).on('pointstart', function() {
-						this.notesdata[this.level][i].bind = NOTHING;
-						this.notes.reset();
-						this.tripletnotes.reset();
-					}.bind(this)).setInteractive(true).addChildTo(group).rotation = this.notesdata[this.level][i].bind === START ? -90 : 90;
-				}
-				if (this.notesdata[this.level][i].random) {
-					Label({x: -150, text: "{"}).on('pointstart', function() {
-						this.notesdata[this.level][i].random = NOTHING;
-						this.notes.reset();
-						this.tripletnotes.reset();
-					}.bind(this)).setInteractive(true).addChildTo(group).rotation = this.notesdata[this.level][i].random === START ? -90 : 90;
-				}
-			}
+      }, this)) for (var j = 0; j < 4; j++) RectangleShape({x: j * 60 - 90, width: 50, height: 25, fill: "#666666", stroke: null}).addChildTo(group);
+      else {
+        if (this.newZone) {
+          group.on('pointover', function() {this.setScale(1.1)})
+            .on('pointout', function() {this.setScale(1)})
+            .on('pointstart', function() {
+              this.notesdata[this.level][i][this.newZone.lane] = this.newZone.type;
+              editZones.interactive = true;
+              this.newZone.fill = Button.defaults.fill;
+              this.newZone = null;
+              this.notes.reset();
+              this.tripletnotes.reset();
+            }.bind(this)).setInteractive(true);
+        }
+        for (var j = 0; j < 4; j++) {
+          var key = RectangleShape({x: j * 60 - 90, width: 50, height: 25, fill: colorOf(this.notesdata[this.level][i][j], this.newZone), stroke: null}).addChildTo(group);
+          if (!this.newZone) key.on("pointstart", function() {
+            if (self.notesdata[self.level][this.i][this.lane]) {
+              self.notesCount[self.level]--;
+              self.notesCountofBar[self.level][Math.floor(this.i / 16)]--;
+              if (self.notesdata[self.level][this.i][this.lane] === ATTACK) {
+                self.attackNotesCount[self.level]--;
+                self.attackNotesCountofBar[self.level][Math.floor(this.i / 16)]--;
+              }
+              self.notesdata[self.level][this.i][this.lane] = NOTHING;
+            } else {
+              self.notesCount[self.level]++;
+              self.notesCountofBar[self.level][Math.floor(this.i / 16)]++;
+              if (self.notetype === ATTACK) {
+                self.attackNotesCount[self.level]++;
+                self.attackNotesCountofBar[self.level][Math.floor(this.i / 16)]++;
+              }
+              self.notesdata[self.level][this.i][this.lane] = self.notetype;
+            }
+            this.fill = colorOf(self.notesdata[self.level][this.i][this.lane]);
+            self.updateNotesCount();
+            self.save();
+            self.tripletnotes.reset();
+          }).$safe({i: i, lane: j}).setInteractive(true);
+        }
+        if (this.notesdata[this.level][i].bind) {
+          Label({x: -130, text: "["}).on('pointstart', function() {
+            this.notesdata[this.level][i].bind = NOTHING;
+            this.notes.reset();
+            this.tripletnotes.reset();
+          }.bind(this)).setInteractive(true).addChildTo(group).rotation = this.notesdata[this.level][i].bind === START ? -90 : 90;
+        }
+        if (this.notesdata[this.level][i].random) {
+          Label({x: -150, text: "{"}).on('pointstart', function() {
+            this.notesdata[this.level][i].random = NOTHING;
+            this.notes.reset();
+            this.tripletnotes.reset();
+          }.bind(this)).setInteractive(true).addChildTo(group).rotation = this.notesdata[this.level][i].random === START ? -90 : 90;
+        }
+      }
       return root;
     }.bind(this), Vector2(0, this.s.pitch.y)).addChildTo(this.score);
     this.tripletnotes = Infiniteof(function(i) {
@@ -209,68 +206,65 @@ phina.define('MainScene', {
         this.tripletnotesdata[this.level][i].random = NOTHING;
       }
       var root = DisplayElement();
-			var group = DisplayElement({width: 225, height: 18, y: -10}).addChildTo(root);
+      var group = DisplayElement({width: 225, height: 18, y: -10}).addChildTo(root);
       var self = this;
       if (LANES.some(function (lane) {
         return this.notesdata[this.level][Math.floor(i / 3) * 2] && this.notesdata[this.level][Math.floor(i / 3) * 2][lane] !== NOTHING || this.notesdata[this.level][Math.floor(i / 3) * 2 + 1] && this.notesdata[this.level][Math.floor(i / 3) * 2 + 1][lane] !== NOTHING;
-      }, this)) for (j = 0; j < 4; j++) {
-        RectangleShape({x: j * 60 - 90, width: 50, height: 15, fill: "#666666", stroke: null}).addChildTo(group);
-      } else {
-				if (this.newZone) {
-					group.on('pointover', function() {
-						this.setScale(1.1);
-					}).on('pointout', function() {
-						this.setScale(1);
-					}).on('pointstart', function() {
-						this.tripletnotesdata[this.level][i][this.newZone.lane] = this.newZone.type;
-						editZones.interactive = true;
-						this.newZone.fill = Button.defaults.fill;
-						this.newZone = null;
-						this.notes.reset();
-						this.tripletnotes.reset();
-					}.bind(this)).setInteractive(true);
-				}
-				for (j = 0; j < 4; j++) {
-	        var key = RectangleShape({x: j * 60 - 90, width: 50, height: 15, fill: colorOf(this.tripletnotesdata[this.level][i][j], this.newZone), stroke: null}).addChildTo(group);
-					if (!this.newZone) key.on("pointstart", function() {
-	          if (self.tripletnotesdata[self.level][this.i][this.lane]) {
-	            self.notesCount[self.level]--;
-	            self.notesCountofBar[self.level][Math.floor(this.i / 24)]--;
-	            if (self.tripletnotesdata[self.level][this.i][this.lane] === ATTACK) {
-	              self.attackNotesCount[self.level]--;
-	              self.attackNotesCountofBar[self.level][Math.floor(this.i / 24)]--;
-	            }
-	            self.tripletnotesdata[self.level][this.i][this.lane] = NOTHING;
-	          } else {
-	            self.notesCount[self.level]++;
-	            self.notesCountofBar[self.level][Math.floor(this.i / 24)]++;
-	            if (self.notetype === ATTACK) {
-	              self.attackNotesCountofBar[self.level][Math.floor(this.i / 24)]++;
-	              self.attackNotesCount[self.level]++;
-	            }
-	            self.tripletnotesdata[self.level][this.i][this.lane] = self.notetype;
-	          }
-	          this.fill = colorOf(self.tripletnotesdata[self.level][this.i][this.lane]);
-	          self.updateNotesCount();
-	          self.save();
-	          self.notes.reset();
-	        }).$safe({i: i, lane: j}).setInteractive(true);
-	      }
-				if (this.tripletnotesdata[this.level][i].bind) {
-					Label({x: 130, text: "["}).on('pointstart', function() {
-						this.tripletnotesdata[this.level][i].bind = NOTHING;
-						this.notes.reset();
-						this.tripletnotes.reset();
-					}.bind(this)).setInteractive(true).addChildTo(group).rotation = this.tripletnotesdata[this.level][i].bind === START ? -90 : 90;
-				}
-				if (this.tripletnotesdata[this.level][i].random) {
-					Label({x: 150, text: "{"}).on('pointstart', function() {
-						this.tripletnotesdata[this.level][i].random = NOTHING;
-						this.notes.reset();
-						this.tripletnotes.reset();
-					}.bind(this)).setInteractive(true).addChildTo(group).rotation = this.tripletnotesdata[this.level][i].random === START ? -90 : 90;
-				}
-			}
+      }, this)) for (j = 0; j < 4; j++) RectangleShape({x: j * 60 - 90, width: 50, height: 15, fill: "#666666", stroke: null}).addChildTo(group);
+      else {
+        if (this.newZone) {
+          group.on('pointover', group.setScale.bind(group, 1.1))
+            .on('pointout', group.setScale.bind(group, 1))
+            .on('pointstart', function() {
+              this.tripletnotesdata[this.level][i][this.newZone.lane] = this.newZone.type;
+              editZones.interactive = true;
+              this.newZone.fill = Button.defaults.fill;
+              this.newZone = null;
+              this.notes.reset();
+              this.tripletnotes.reset();
+            }.bind(this)).setInteractive(true);
+        }
+        for (j = 0; j < 4; j++) {
+          var key = RectangleShape({x: j * 60 - 90, width: 50, height: 15, fill: colorOf(this.tripletnotesdata[this.level][i][j], this.newZone), stroke: null}).addChildTo(group);
+          if (!this.newZone) key.on("pointstart", function() {
+            if (self.tripletnotesdata[self.level][this.i][this.lane]) {
+              self.notesCount[self.level]--;
+              self.notesCountofBar[self.level][Math.floor(this.i / 24)]--;
+              if (self.tripletnotesdata[self.level][this.i][this.lane] === ATTACK) {
+                self.attackNotesCount[self.level]--;
+                self.attackNotesCountofBar[self.level][Math.floor(this.i / 24)]--;
+              }
+              self.tripletnotesdata[self.level][this.i][this.lane] = NOTHING;
+            } else {
+              self.notesCount[self.level]++;
+              self.notesCountofBar[self.level][Math.floor(this.i / 24)]++;
+              if (self.notetype === ATTACK) {
+                self.attackNotesCountofBar[self.level][Math.floor(this.i / 24)]++;
+                self.attackNotesCount[self.level]++;
+              }
+              self.tripletnotesdata[self.level][this.i][this.lane] = self.notetype;
+            }
+            this.fill = colorOf(self.tripletnotesdata[self.level][this.i][this.lane]);
+            self.updateNotesCount();
+            self.save();
+            self.notes.reset();
+          }).$safe({i: i, lane: j}).setInteractive(true);
+        }
+        if (this.tripletnotesdata[this.level][i].bind) {
+          Label({x: 130, text: "["}).on('pointstart', function() {
+            this.tripletnotesdata[this.level][i].bind = NOTHING;
+            this.notes.reset();
+            this.tripletnotes.reset();
+          }.bind(this)).setInteractive(true).addChildTo(group).rotation = this.tripletnotesdata[this.level][i].bind === START ? -90 : 90;
+        }
+        if (this.tripletnotesdata[this.level][i].random) {
+          Label({x: 150, text: "{"}).on('pointstart', function() {
+            this.tripletnotesdata[this.level][i].random = NOTHING;
+            this.notes.reset();
+            this.tripletnotes.reset();
+          }.bind(this)).setInteractive(true).addChildTo(group).rotation = this.tripletnotesdata[this.level][i].random === START ? -90 : 90;
+        }
+      }
       return root;
     }.bind(this), Vector2(0, this.s.pitch.y / 3 * 2), {x: 120}).hide().addChildTo(this.score);
     this.notesCountLabel = Label({
@@ -279,14 +273,14 @@ phina.define('MainScene', {
       fontFamily: "Nova Mono",
       align: "left",
       baseline: "top",
-			x: 10, y: 35
+      x: 10, y: 35
     }).addChildTo(this);
     var BUTTONS_X = 860;
     var notetype = Button({
       text: "Normal Notes",
       fill: colorOf(NORMAL),
       fontSize: 20,
-			x: BUTTONS_X, y: 50
+      x: BUTTONS_X, y: 50
     }).on("pointstart", function() {
       if (++this.notetype > LONG_END) this.notetype = NORMAL;
       notetype.text = ["Normal Notes", "Attack Notes", "Long-Start", "Long-end"][this.notetype - 1];
@@ -297,99 +291,99 @@ phina.define('MainScene', {
       this.notes.x = this.tripletnotes.visible ? -120 : 0;
     }.bind(this)).addChildTo(this);
 
-		var editZones = Button({
-			text: "Edit Zones",
-			fontSize: 20,
-			x: BUTTONS_X, y: 210
-		}).addChildTo(this);
-		editZones.addChild(phina.createClass({
-			superClass: DisplayElement,
-			init: function(options) {
-				this.superInit(options);
-				this.clipX = this.width;
-				editZones.on('pointover', function() {
-					this.tweener.clear().to({clipX: 0}, 500, "easeOutCubic").play();
-				}.bind(this)).on('pointout', function() {
-					this.tweener.clear().to({clipX: this.width}, 500, "easeOutCubic").play();
-					this.cancel.tweener.to({y: 39}, 500, "easeOutCubic").play();
-					this.cancel.interactive = false;
-				}.bind(this));
-				this.buttons = [
-					Button({
-						text: "[",
-						fontSize: 20,
-						cornerRadius: 0,
-						width: 40,
-						x: -60
-					}).addChildTo(this).$safe({lane: "bind", type: START}),
-					Button({
-						text: "{",
-						fontSize: 20,
-						cornerRadius: 0,
-						width: 40,
-						x: -20
-					}).addChildTo(this).$safe({lane: "random", type: START}),
-					Button({
-						text: "]",
-						fontSize: 20,
-						cornerRadius: 0,
-						width: 40,
-						x: 20
-					}).addChildTo(this).$safe({lane: "bind", type: END}),
-					Button({
-						text: "}",
-						fontSize: 20,
-						cornerRadius: 0,
-						width: 40,
-						x: 60
-					}).addChildTo(this).$safe({lane: "random", type: END})
-				];
-				this.cancel = Button({
-					text: "Cancel",
-					fontSize: 12,
-					cornerRadius: 0,
-					height: 14,
-					y: 39,
-					fill: '#c0392b'
-				}).addChildTo(this);
-				this.cancel.interactive = false;
-			},
-			update: function() {
-				this.visible = this.width - this.clipX > this.parent.cornerRadius;
-			},
-			onadded: function() {
-				var scene = this.getRoot();
-				var self = this;
-				this.buttons.each(function(button) {
-					button.on('pointstart', function() {
-						self.buttons.each(function(button) {
-							button.fill = Button.defaults.fill;
-						});
-						this.fill = 'hsl(200, 70%, 50%)';
-						scene.newZone = this;
-						scene.notes.reset();
-						scene.tripletnotes.reset();
-						editZones.interactive = false;
-						self.cancel.interactive = true;
-						self.cancel.tweener.to({y: 25}, 500, "easeOutCubic").play();
-					});
-				});
-				this.cancel.on('pointstart', function() {
-					self.buttons.each(function(button) {
-						button.fill = Button.defaults.fill;
-					});
-					scene.newZone = null;
-					scene.notes.reset();
-					scene.tripletnotes.reset();
-					this.interactive = false;
-					editZones.interactive = true;
-					this.tweener.to({y: 39}, 500, "easeOutCubic").play();
-				});
-			},
-			clip: function(canvas) {
-				canvas.beginPath().roundRect(this.clipX - this.width / 2, -this.height / 2, this.width - this.clipX, this.height, this.parent.cornerRadius);
-			}
-		})({width: 160, height: 64}));
+    var editZones = Button({
+      text: "Edit Zones",
+      fontSize: 20,
+      x: BUTTONS_X, y: 210
+    }).addChildTo(this);
+    editZones.addChild(phina.createClass({
+      superClass: DisplayElement,
+      init: function(options) {
+        this.superInit(options);
+        this.clipX = this.width;
+        editZones.on('pointover', function() {
+          this.tweener.clear().to({clipX: 0}, 500, "easeOutCubic").play();
+        }.bind(this)).on('pointout', function() {
+          this.tweener.clear().to({clipX: this.width}, 500, "easeOutCubic").play();
+          this.cancel.tweener.to({y: 39}, 500, "easeOutCubic").play();
+          this.cancel.interactive = false;
+        }.bind(this));
+        this.buttons = [
+          Button({
+            text: "[",
+            fontSize: 20,
+            cornerRadius: 0,
+            width: 40,
+            x: -60
+          }).addChildTo(this).$safe({lane: "bind", type: START}),
+          Button({
+            text: "{",
+            fontSize: 20,
+            cornerRadius: 0,
+            width: 40,
+            x: -20
+          }).addChildTo(this).$safe({lane: "random", type: START}),
+          Button({
+            text: "]",
+            fontSize: 20,
+            cornerRadius: 0,
+            width: 40,
+            x: 20
+          }).addChildTo(this).$safe({lane: "bind", type: END}),
+          Button({
+            text: "}",
+            fontSize: 20,
+            cornerRadius: 0,
+            width: 40,
+            x: 60
+          }).addChildTo(this).$safe({lane: "random", type: END})
+        ];
+        this.cancel = Button({
+          text: "Cancel",
+          fontSize: 12,
+          cornerRadius: 0,
+          height: 14,
+          y: 39,
+          fill: '#c0392b'
+        }).addChildTo(this);
+        this.cancel.interactive = false;
+      },
+      update: function() {
+        this.visible = this.width - this.clipX > this.parent.cornerRadius;
+      },
+      onadded: function() {
+        var scene = this.getRoot();
+        var self = this;
+        this.buttons.each(function(button) {
+          button.on('pointstart', function() {
+            self.buttons.each(function(button) {
+              button.fill = Button.defaults.fill;
+            });
+            this.fill = 'hsl(200, 70%, 50%)';
+            scene.newZone = this;
+            scene.notes.reset();
+            scene.tripletnotes.reset();
+            editZones.interactive = false;
+            self.cancel.interactive = true;
+            self.cancel.tweener.to({y: 25}, 500, "easeOutCubic").play();
+          });
+        });
+        this.cancel.on('pointstart', function() {
+          self.buttons.each(function(button) {
+            button.fill = Button.defaults.fill;
+          });
+          scene.newZone = null;
+          scene.notes.reset();
+          scene.tripletnotes.reset();
+          this.interactive = false;
+          editZones.interactive = true;
+          this.tweener.to({y: 39}, 500, "easeOutCubic").play();
+        });
+      },
+      clip: function(canvas) {
+        canvas.beginPath().roundRect(this.clipX - this.width / 2, -this.height / 2, this.width - this.clipX, this.height, this.parent.cornerRadius);
+      }
+    })({width: 160, height: 64}));
 
     var updateDifficutly = function(level) {
       this.level = level;
@@ -560,8 +554,9 @@ phina.define('MainScene', {
       return ch === "1" || ch === "2" || ch === "3" || ch === "4" || ch === "5" || ch === "6" || ch === "7" || ch === "8" || ch === "a" || ch === "b" || ch === "c" || ch === "d" || ch === "e" || ch === "f" || ch === "g" || ch === "h" || ch === "[" || ch === "]" || ch === "{" || ch === "}";
     }
     var increment = function(key, ii, type) {
+      if (type === START || type === END) return;
       this.notesCount[key]++;
-      if(!this.notesCountofBar[key][Math.floor(ii / 16)]) this.notesCountofBar[key][Math.floor(ii / 16)] = 0;
+      if (!this.notesCountofBar[key][Math.floor(ii / 16)]) this.notesCountofBar[key][Math.floor(ii / 16)] = 0;
       this.notesCountofBar[key][Math.floor(ii / 16)]++;
       if (type === ATTACK) {
         this.attackNotesCount[key]++;
