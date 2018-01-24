@@ -1,18 +1,15 @@
 
 var SCREEN_WIDTH = 960;
-var SCREEN_HEIGHT = 640;
 var SCREEN_CENTER_X = SCREEN_WIDTH / 2;
-var SCREEN_CENTER_Y = SCREEN_HEIGHT / 2;
 
 phina.globalize();
 
 phina.display.DisplayScene.defaults.$extend({
   width: SCREEN_WIDTH,
-  height: SCREEN_HEIGHT
 });
 phina.game.LoadingScene.defaults.$extend({
   width: SCREEN_WIDTH,
-  height: SCREEN_HEIGHT
+  height: 640
 });
 
 phina.ui.Button.defaults.$extend({
@@ -66,21 +63,22 @@ phina.define('MainScene', {
     this.attackNotesCount = {      easy: 0,         normal: 0,          hard: 0};
     this.attackNotesCountofBar = {easy: [],         normal: [],        hard: []};
     this.lengths = {              easy: Lengths(), normal: Lengths(), hard: Lengths()};
-    this.score = DisplayElement({x: SCREEN_CENTER_X, y: SCREEN_HEIGHT}).addChildTo(this);
-    this.dencitygraph = DisplayElement().addChildTo(this);
+    this.screenBottom = DisplayElement({y: this.height}).addChildTo(this);
+    this.score = DisplayElement({x: SCREEN_CENTER_X}).addChildTo(this.screenBottom);
+    this.dencitygraph = DisplayElement({y: -9}).addChildTo(this.screenBottom);
     this.dencitygraph.alpha = 0.3;
-    this.limitline = PathShape({x: 8 + 240 / 9, strokeWidth: 2, paths: [Vector2(0, 0), Vector2(0, SCREEN_HEIGHT)]}).addChildTo(this);
-    Label({x: 35, y: 600, fontSize: 12, text: "10notes/s"}).addChildTo(this.limitline);
+    this.limitline = PathShape({x: 8 + 240 / 9, strokeWidth: 2, paths: [Vector2(0, 0), Vector2(0, this.height)]}).addChildTo(this);
+    Label({x: 68, y: -40, fontSize: 12, text: "10notes/s"}).addChildTo(this.screenBottom);
     this.notesCountofBar.forIn(function(k, v) {v.fill(0, 0, 5)});
     this.attackNotesCountofBar.forIn(function(k, v) {v.fill(0, 0, 5)});
     this.currentpos = RectangleShape({
       width: 100,
       height: 10,
       x: 48,
-      y: 629,
+      y: 2,
       fill: "gray",
       stroke: null
-    }).addChildTo(this);
+    }).addChildTo(this.screenBottom).setOrigin(0.5, 1);
     this.currentpos.alpha = 0.3;
     this.extend = Button({x: -320, y: -2360, text: "+", width: 48, height: 48}).on("pointstart", function() {
       this.time[this.level]++;
@@ -429,7 +427,8 @@ phina.define('MainScene', {
 
     this.on("enter", function(e) {
       e.app.domElement.addEventListener('wheel', function(e) {
-        this.score.y = Math.min(Math.max(this.score.y - e.deltaY * (e.deltaMode === 1 ? 35 : 1), 640), -this.notes.pitch.y * this.lengths[this.level].totaltime);
+        // e.deltaMode は 0なら1が1px、1なら1が1行であることを意味する
+        this.score.y = Math.min(Math.max(this.score.y - e.deltaY * (e.deltaMode === 1 ? 35 : 1), 0), -this.notes.pitch.y * this.lengths[this.level].totaltime - this.height);
         this.updateGraphY();
       }.bind(this));
       e.app.domElement.addEventListener("dragover", function(event) {
@@ -476,10 +475,14 @@ phina.define('MainScene', {
     }
     localStorage.setItem('saves', JSON.stringify(saves));
   },
+  update: function() {
+    this.screenBottom.y = this.height;
+    this.currentpos.height = this.height / 60;
+  },
   updateDencityGraph: function() {
     while (this.dencitygraph.children.length > this.notesCountofBar[this.level].length) this.dencitygraph.children.last.remove();
     while (this.dencitygraph.children.length < this.notesCountofBar[this.level].length) {
-      var group = DisplayElement({y: 631 - this.dencitygraph.children.length * 8}).addChildTo(this.dencitygraph);
+      var group = DisplayElement({y: -this.dencitygraph.children.length * 8}).addChildTo(this.dencitygraph);
       group.normal = RectangleShape({
         height: 6,
         stroke: null
@@ -496,10 +499,10 @@ phina.define('MainScene', {
     }
   },
   updateGraphY: function() {
-    // 37080 = (629 - 6 - 10 / 2) * 60
-    var a = Math.min(32000 / (-this.notes.pitch.y * this.lengths[this.level].totaltime - 640), 1);
-    this.currentpos.y = 629 - (this.score.y - 640) / 60 * a;
-    this.dencitygraph.y = (this.score.y - 640) / 60 * (1 - a);
+    // 60 = 30 * 16 / 8
+    var a = Math.min((this.height - 122) * 60 / (-this.notes.pitch.y * this.lengths[this.level].totaltime - this.height), 1);
+    this.currentpos.y = -this.score.y / 60 * a + 2;
+    this.dencitygraph.y = this.score.y / 60 * (1 - a) - 9;
   },
   updateTime: function(updategraph) {
     this.extend.y = this.notes.pitch.y * this.lengths[this.level].totaltime + 40;
@@ -678,12 +681,14 @@ phina.define('MainScene', {
             data += codeOf(this.notesdata[level][j][lane], lane);
           }, this);
           if (j % 2 === 0 && j < o + this.lengths[level].diff[i] - 1) {
+            // 8分刻みで通常のノーツがあるか
             if (this.notesdata[level][j]) if (LANES.some(function (lane) {
               return this.notesdata[level][j][lane] !== NOTHING;
             }, this)) continue;
             if (this.notesdata[level][j + 1]) if (LANES.some(function (lane) {
               return this.notesdata[level][j + 1][lane] !== NOTHING;
             }, this)) continue;
+            // なければ3連符を配置
             data += "("
             for(var k = 0;; k++) {
               if (this.tripletnotesdata[level][j * 3 / 2 + k]) LANES.each(function (lane) {
@@ -696,11 +701,13 @@ phina.define('MainScene', {
             putrightparenthese = true;
           }
         }
-        data = data.slice(0, -1);
-        if (data.endsWith("(,,")) {
+        data = data.slice(0, -1); // 最後に余計な,が付くので消す
+        if (data.endsWith("(,,")) { // 上の仕組みは次の小節始めで閉じようとするので
           putrightparenthese = false;
           data = data.replace(/\(,,$/, ",");
         }
+        // 上の仕組みによって空いているところは(,,,)で埋まるが無駄なので,,に置き換える
+        // また )( のような形ができることもあるが無駄なので消す
         this.json.map[level].push(data.replace(/\(,,,\)/g, ",,").replace(/\)\(/g, ""));
       }
     }, this);
@@ -748,10 +755,36 @@ phina.define("Lengths", {
 phina.main(function() {
   var app = GameApp({
     width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT,
+    height: innerHeight,
     startLabel: "main",
-    fps: 60
+    fps: 60,
+    fit: false
   });
+
+  app.domElement.style["display"] = "block";
+  app.domElement.style["margin-left"] = "auto";
+  app.domElement.style["margin-right"] = "auto";
+
+  var fitFunc = function() {
+    app.height = innerHeight;
+    app.canvas.setSize(app.canvas.width, app.height);
+    app.gridY.width = app.height;
+    app.mouse.height = app.height;
+    app.touch.height = app.height;
+    app.touchList.height = app.height;
+    DisplayScene.defaults.height = app.height;
+    app._scenes.each(function(scene) {
+      scene.height = app.height;
+      if (scene.gridY) scene.gridY.width = app.height;
+      if (scene.canvas) {
+        scene.canvas.setSize(scene.canvas.width, app.height);
+      }
+    });
+  };
+
+  fitFunc();
+
+  addEventListener('resize', fitFunc);
 
   app.run();
 });
