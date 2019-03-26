@@ -1,9 +1,9 @@
 yall({observeChanges: true});
 
 firebase.initializeApp({
-  apiKey: 'AIzaSyAkpWpmj1vjLb_ayPupXSO8URQaAMes5_k',
-  authDomain: 'card-hunter-review-index.firebaseapp.com',
-  projectId: 'card-hunter-review-index'
+	apiKey: 'AIzaSyAkpWpmj1vjLb_ayPupXSO8URQaAMes5_k',
+	authDomain: 'card-hunter-review-index.firebaseapp.com',
+	projectId: 'card-hunter-review-index'
 });
 
 var db = firebase.firestore();
@@ -21,7 +21,7 @@ function applySearch() {
 	} catch(e) {} // 正規表現エラーは握りつぶす
 	var resultcache = {};
 	for (var i = 0; i < list.children.length; i++) {
-  	list.children[i].hidden = !(function() {
+		list.children[i].hidden = !(function() {
 			var name = list.children[i].getElementsByTagName('span')[0].innerText;
 			if (regex.test(name)) return true;
 			if (regexAcronym.test(name)) return true;

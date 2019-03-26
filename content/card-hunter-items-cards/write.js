@@ -8,44 +8,44 @@ const serviceAccount = require("./card-hunter-review-index-firebase-adminsdk-x3m
 console.log("Getting document");
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://card-hunter-review-index.firebaseio.com"
+	credential: admin.credential.cert(serviceAccount),
+	databaseURL: "https://card-hunter-review-index.firebaseio.com"
 });
 
 const db = admin.firestore();
 const doc = db.collection("data").doc("data");
 
 function parseCSV(str) {
-  let i, c, r, q, l, m, v, j, len=str.length, rows = [], row = [];
-  m = (l = str.indexOf('\r\n')<0 ? str.indexOf('\r')<0 ? '\n' : '\r' : '\r\n').length; //改行記号を決定
-  for(i=0,c=r=-1; i<len; i++) {
-    if (str.charAt(i) === '"') { //quoted
-      for(j=0,q=i+1; q<len; j++,q++) { //閉quotを探す
-        q = (q=str.indexOf('"',q)) < 0 ? len+1 : q; //quotの位置、無いなら末尾まで
-        if (str.charAt(++q) !== '"') break;       //""なら継続
-      }
-      row.push((v=str.substring(i+1,(i=q)-1),j) ? v.replace(/""/g,'"') : v);
-    } else { //not quoted
-      if (c<i) {
+	let i, c, r, q, l, m, v, j, len=str.length, rows = [], row = [];
+	m = (l = str.indexOf('\r\n')<0 ? str.indexOf('\r')<0 ? '\n' : '\r' : '\r\n').length; //改行記号を決定
+	for(i=0,c=r=-1; i<len; i++) {
+		if (str.charAt(i) === '"') { //quoted
+			for(j=0,q=i+1; q<len; j++,q++) { //閉quotを探す
+				q = (q=str.indexOf('"',q)) < 0 ? len+1 : q; //quotの位置、無いなら末尾まで
+				if (str.charAt(++q) !== '"') break;			 //""なら継続
+			}
+			row.push((v=str.substring(i+1,(i=q)-1),j) ? v.replace(/""/g,'"') : v);
+		} else { //not quoted
+			if (c<i) {
 				c=str.indexOf(',',i);
 				c=c<0?len:c;
 			} //直近のカンマ位置と
-      if (r<i) {
+			if (r<i) {
 				r=str.indexOf(l,i);
 				r=r<0?len:r;
-			}   //直近の改行位置を調べ
-      row.push(str.substring(i,(i=c<r?c:r)));      //そこまでを値とする
-    }
-    if (i === r || l === (m>1?str.substr(i,m):str.charAt(i))) {
+			}	 //直近の改行位置を調べ
+			row.push(str.substring(i,(i=c<r?c:r)));			//そこまでを値とする
+		}
+		if (i === r || l === (m>1?str.substr(i,m):str.charAt(i))) {
 			rows.push(row);
 			row=[];
 			i+=m-1;
 		}
-  }
-  str.charAt(i-1) === ',' && row.push(''); //,で終わる
-  row.length && rows.push(row);
-  str.substr(i-1,m) === l && rows.push([]); //最後の改行を無視する場合はコメントアウト
-  return rows;
+	}
+	str.charAt(i-1) === ',' && row.push(''); //,で終わる
+	row.length && rows.push(row);
+	str.substr(i-1,m) === l && rows.push([]); //最後の改行を無視する場合はコメントアウト
+	return rows;
 };
 
 console.log("Removing document");
@@ -110,5 +110,5 @@ fetch("http://live.cardhunter.com/data/gameplay/Cards/Cards.csv").then(function(
 		});
 	});
 }).catch(function(error) {
-  console.error("Error making document: ", error);
+	console.error("Error making document: ", error);
 });
