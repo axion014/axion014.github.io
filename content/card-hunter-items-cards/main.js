@@ -19,7 +19,7 @@ function applySearch() {
 			return a + b + ".* ";
 		}, '^').trim(), 'i');
 	} catch(e) {} // 正規表現エラーは握りつぶす
-	var resultcache = {name: {}, acronym: {}};
+	var resultcache = {};
 	for (var i = 0; i < list.children.length; i++) {
   	list.children[i].hidden = !(function() {
 			var name = list.children[i].getElementsByTagName('span')[0].innerText;
@@ -28,12 +28,9 @@ function applySearch() {
 			if (list.children[i].data.cards) for (var j = 0; j < list.children[i].data.cards.length; j++) {
 				var card = list.children[i].data.cards[j];
 				// = operator intended
-				if (resultcache.name[card] !== undefined) {
-					if (resultcache.name[card]) return true;
-				} else if (resultcache.name[card] = regex.test(card)) return true;
-				if (resultcache.acronym[card] !== undefined) {
-					if (resultcache.acronym[card]) return true;
-				} else if (resultcache.acronym[card] = regexAcronym.test(card)) return true;
+				if (resultcache[card] !== undefined) {
+					if (resultcache[card]) return true;
+				} else if (resultcache[card] = regex.test(card) || regexAcronym.test(card)) return true;
 			}
 			return false;
 		})();
