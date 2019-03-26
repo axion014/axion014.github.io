@@ -1,0 +1,54 @@
+body {
+	width: 80%;
+	margin: 40px auto;
+}
+
+#loading {
+	font-size: 64px;
+	width: 80%;
+	color: gray;
+	text-align: center;
+}
+
+#searchbar {
+	display: block;
+	width: 100%;
+	max-width: 800px;
+	height: 40px;
+	border-radius: 5px;
+	font-size: 28px;
+	font-family: Calibri, 'Trebuchet MS', Verdana, Geneva, Arial, Helvetica, sans-serif;
+	padding: 1px 5px;
+	margin-top: 40px;
+}
+
+#list {
+	margin: 40px auto;
+}
+
+#list a {
+	color: #44b;
+	font-style: italic;
+}
+
+#list * {
+	margin-right: 10px;
+}
+
+#list li {
+	max-width: 800px;
+	border-color: gray;
+	border-width: 1px;
+	border-style: solid;
+	border-radius: 5px;
+	padding: 1px 5px;
+	margin-top: 15px;
+}
+
+#list img {
+	vertical-align: middle;
+}
+
+#list .clickable {
+	cursor: pointer;
+}
