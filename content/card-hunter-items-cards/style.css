@@ -26,11 +26,6 @@ body {
 	margin: 40px auto;
 }
 
-#list a {
-	color: #44b;
-	font-style: italic;
-}
-
 #list * {
 	margin-right: 10px;
 }

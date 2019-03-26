@@ -56,6 +56,7 @@ db.collection("data").doc("data").get().then(function(data) {
 		name.innerText = card.name;
 		element.appendChild(name);
 		var linkToWiki = document.createElement('a');
+		linkToWiki.className = "smalllink";
 		linkToWiki.href = "http://wiki.cardhuntria.com/wiki/Cards/" + card.name;
 		linkToWiki.innerText = "Wiki";
 		element.appendChild(linkToWiki);
@@ -89,6 +90,7 @@ db.collection("data").doc("data").get().then(function(data) {
 			element.appendChild(image);
 		});
 		var linkToWiki = document.createElement('a');
+		linkToWiki.className = "smalllink";
 		linkToWiki.href = "http://wiki.cardhuntria.com/wiki/Items/" + item.name;
 		linkToWiki.innerText = "Wiki";
 		element.appendChild(linkToWiki);
