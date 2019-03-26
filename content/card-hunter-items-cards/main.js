@@ -10,7 +10,7 @@ var db = firebase.firestore();
 var list = document.getElementById('list');
 var searchbar = document.getElementById('searchbar');
 
-searchbar.value = location.hash.substring(1);
+searchbar.value = decodeURIComponent(location.hash.substring(1));
 
 function applySearch() {
 	try {
