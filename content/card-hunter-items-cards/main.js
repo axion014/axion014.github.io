@@ -41,6 +41,8 @@ db.collection("data").doc("data").get().then(function(data) {
 	data = data.data();
 	data.cards.forEach(function(card) {
 		var element = document.createElement('li');
+		var anchor = document.createElement('a');
+		anchor.href = "./detail.html?type=card&name=" + card.name;
 		element.data = card;
 		//element.id = card.name;
 		var image = document.createElement('img');
@@ -48,19 +50,25 @@ db.collection("data").doc("data").get().then(function(data) {
 		image.width = 43;
 		image.height = 60;
 		image.dataset.src = "http://wiki.cardhuntria.com/wiki/Special:FilePath/" + card.name + ".jpeg";
-		element.appendChild(image);
+		anchor.appendChild(image);
 		var name = document.createElement('span');
 		name.innerText = card.name;
-		element.appendChild(name);
+		anchor.appendChild(name);
 		var linkToWiki = document.createElement('a');
 		linkToWiki.className = "external";
 		linkToWiki.href = "http://wiki.cardhuntria.com/wiki/Cards/" + card.name;
 		linkToWiki.innerText = "Wiki";
-		element.appendChild(linkToWiki);
+		anchor.appendChild(linkToWiki);
+		element.appendChild(anchor);
 		list.appendChild(element);
 	});
 	data.items.forEach(function(item) {
 		var element = document.createElement('li');
+		var anchor = document.createElement('a');
+		anchor.href = "./detail.html?type=item&name=" + item.name + "&imageurl=" + item.image_url +
+			"&cards=" + (item.cards.length !== 0 ? item.cards.reduce(function(a, b) {
+				return a + '、' + b; // A card name likely won't include this so no need to escape
+			}) : "");
 		element.data = item;
 		//element.id = item.name;
 		if (item.image_url) {
@@ -69,28 +77,31 @@ db.collection("data").doc("data").get().then(function(data) {
 			image.width = 60;
 			image.height = 60;
 			image.dataset.src = "http://wiki.cardhuntria.com/wiki/Special:FilePath/" + item.image_url + ".png";
-			element.appendChild(image);
+			anchor.appendChild(image);
 		}
 		var name = document.createElement('span');
 		name.innerText = item.name;
-		element.appendChild(name);
+		anchor.appendChild(name);
 		item.cards.forEach(function(name) {
+			var innerAnchor = document.createElement('a');
+			innerAnchor.href = "./detail.html?type=card&name=" + name;
 			var image = document.createElement('img');
-			image.className = "lazy clickable";
+			image.className = "lazy";
 			image.width = 43;
 			image.height = 60;
 			image.dataset.src = "http://wiki.cardhuntria.com/wiki/Special:FilePath/" + name + ".jpeg";
 			image.addEventListener('pointerdown', function() {
-				searchbar.value = name;
-				applySearch();
+				location.href = "./detail.html?type=card&name=" + name;
 			});
-			element.appendChild(image);
+			innerAnchor.appendChild(image);
+			anchor.appendChild(innerAnchor);
 		});
 		var linkToWiki = document.createElement('a');
 		linkToWiki.className = "external";
 		linkToWiki.href = "http://wiki.cardhuntria.com/wiki/Items/" + item.name;
 		linkToWiki.innerText = "Wiki";
-		element.appendChild(linkToWiki);
+		anchor.appendChild(linkToWiki);
+		element.appendChild(anchor);
 		list.appendChild(element);
 	});
 	searchbar.addEventListener('input', applySearch);

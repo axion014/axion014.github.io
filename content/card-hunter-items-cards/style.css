@@ -3,6 +3,10 @@ body {
 	margin: 40px auto;
 }
 
+article {
+	margin: 25px 0;
+}
+
 #loading {
 	font-size: 64px;
 	width: 80%;
@@ -38,12 +42,56 @@ body {
 	border-radius: 5px;
 	padding: 1px 5px;
 	margin-top: 15px;
+	cursor: pointer;
+}
+
+#list li > a {
+	display: block;
 }
 
 #list img {
 	vertical-align: middle;
 }
 
-#list .clickable {
+#icon {
+	display: block;
+	margin-right: 20px;
+	float: left;
+}
+
+#cards {
+	margin: 20px 0;
+}
+
+#cards * {
 	cursor: pointer;
+}
+
+#submit {
+	display: inline-block;
+	margin-top: 10px;
+}
+
+#submit:hover {
+	margin-top: 12px;
+}
+
+a.label {
+	color: black;
+}
+
+.remove {
+	color: transparent;
+	font-size: 0.6em;
+}
+
+#reviews li:hover .remove {
+	color: #ccc;
+	margin-left: 10px;
+	cursor: pointer;
+}
+
+#errortext {
+	margin-left: 10px;
+	color: #d33;
 }
