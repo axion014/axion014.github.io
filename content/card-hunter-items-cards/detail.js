@@ -6,6 +6,7 @@ for (var i = 0; pair[i]; i++) {
 	arg[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1]);
 }
 
+document.getElementsByTagName('title')[0].innerText = arg.name + " - Card Hunter Items/Cards";
 document.getElementById('title').innerText = arg.name;
 
 firebase.initializeApp({
