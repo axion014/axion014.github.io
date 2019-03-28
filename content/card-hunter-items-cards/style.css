@@ -30,7 +30,7 @@ article {
 	margin: 40px auto;
 }
 
-#list * {
+#list li > a > * {
 	margin-right: 10px;
 }
 
@@ -61,10 +61,6 @@ article {
 
 #cards {
 	margin: 20px 0;
-}
-
-#cards * {
-	cursor: pointer;
 }
 
 #submit {

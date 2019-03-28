@@ -1,5 +1,3 @@
-yall({observeChanges: true});
-
 firebase.initializeApp({
 	apiKey: 'AIzaSyAkpWpmj1vjLb_ayPupXSO8URQaAMes5_k',
 	authDomain: 'card-hunter-review-index.firebaseapp.com',
@@ -11,6 +9,8 @@ var list = document.getElementById('list');
 var searchbar = document.getElementById('searchbar');
 
 searchbar.value = decodeURIComponent(location.hash.substring(1));
+
+var domUpTodate = true;
 
 function applySearch() {
 	try {
@@ -24,7 +24,7 @@ function applySearch() {
 	for (var i = 0; i < listarray.length; i++) {
 		var element = listarray[i];
 		element.priority = 0;
-		var name = element.getElementsByTagName('span')[0].innerText;
+		var name = element.data.name;
 		if (regex.test(name)) element.priority = Infinity;
 		for (var j = 0; j < element.data.alias.length; j++) {
 			if (regex.test(element.data.alias[j])) element.priority += 1000;
@@ -42,11 +42,19 @@ function applySearch() {
 				if (resultcache[card]) element.priority += 1;
 			} else if (resultcache[card] = regex.test(card) || regexAcronym.test(card)) element.priority += 1;
 		}
-		element.hidden = element.priority === 0;
 	}
 	listarray.sort(function(a, b) {return b.priority - a.priority});
-	for (i = 0; i < listarray.length; i++) {
-		list.appendChild(list.removeChild(listarray[i]));
+	if (domUpTodate) {
+		domUpTodate = false;
+		requestAnimationFrame(function() {
+			for (var i = 0; i < listarray.length; i++) {
+				list.appendChild(listarray[i]);
+				if (listarray[i].priority !== 0) {
+					listarray[i].hidden = false;
+				} else listarray[i].hidden = true;
+			}
+			domUpTodate = true;
+		});
 	}
 }
 
@@ -121,6 +129,7 @@ db.collection("data").doc("data").get().then(function(data) {
 	searchbar.addEventListener('change', function() {
 		location.hash = searchbar.value ? "#" + searchbar.value : "";
 	});
+	yall();
 	applySearch();
 	var loading = document.getElementById('loading');
 	loading.parentNode.removeChild(loading);
