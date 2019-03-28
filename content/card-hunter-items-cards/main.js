@@ -58,8 +58,16 @@ function applySearch() {
 	}
 }
 
-db.collection("data").doc("data").get().then(function(data) {
-	data = data.data();
+var data = JSON.parse(localStorage.getItem("data"));
+
+function newData(snapshot) {
+	data = snapshot.data();
+	console.log("New data snapshot retrieved");
+	localStorage.setItem("data", JSON.stringify(data));
+	showData();
+}
+
+function showData() {
 	data.cards.forEach(function(card) {
 		var element = document.createElement('li');
 		var anchor = document.createElement('a');
@@ -133,4 +141,16 @@ db.collection("data").doc("data").get().then(function(data) {
 	applySearch();
 	var loading = document.getElementById('loading');
 	loading.parentNode.removeChild(loading);
-}).catch(function(error) {console.error("Error getting document:", error);});
+}
+
+if (data) {
+	db.collection("data").where("lastUpdated", ">", data.lastUpdated).get()
+		.then(function(snapshot) {
+			if (snapshot.empty) showData();
+			else newData(snapshot.docs[0]);
+		})
+		.catch(function(error) {console.error("Error getting document:", error);});
+} else {
+	db.collection("data").doc("data").get().then(newData)
+		.catch(function(error) {console.error("Error getting document:", error);});
+}
