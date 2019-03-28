@@ -26,7 +26,15 @@ function applySearch() {
 		element.priority = 0;
 		var name = element.getElementsByTagName('span')[0].innerText;
 		if (regex.test(name)) element.priority = Infinity;
+		for (var j = 0; j < element.data.alias.length; j++) {
+			if (regex.test(element.data.alias[j])) element.priority += 1000;
+		}
 		if (regexAcronym.test(name)) element.priority += 100;
+		if (regex.test(element.data.type)) element.priority += 5;
+		if (regex.test(element.data.rarity)) element.priority += 5;
+		if (element.data.quality && regex.test(element.data.quality)) element.priority += 5;
+		if (element.data.attacktype && regex.test(element.data.attacktype)) element.priority += 5;
+		if (element.data.damage && regex.test(element.data.damage)) element.priority += 5;
 		if (element.data.cards) for (j = 0; j < element.data.cards.length; j++) {
 			var card = element.data.cards[j];
 			// = operator intended
