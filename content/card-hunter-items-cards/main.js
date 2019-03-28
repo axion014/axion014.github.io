@@ -20,20 +20,25 @@ function applySearch() {
 		}, '^').trim(), 'i');
 	} catch(e) {} // 正規表現エラーは握りつぶす
 	var resultcache = {};
-	for (var i = 0; i < list.children.length; i++) {
-		list.children[i].hidden = !(function() {
-			var name = list.children[i].getElementsByTagName('span')[0].innerText;
-			if (regex.test(name)) return true;
-			if (regexAcronym.test(name)) return true;
-			if (list.children[i].data.cards) for (var j = 0; j < list.children[i].data.cards.length; j++) {
-				var card = list.children[i].data.cards[j];
-				// = operator intended
-				if (resultcache[card] !== undefined) {
-					if (resultcache[card]) return true;
-				} else if (resultcache[card] = regex.test(card) || regexAcronym.test(card)) return true;
-			}
-			return false;
-		})();
+	var listarray = Array.prototype.slice.call(list.children);
+	for (var i = 0; i < listarray.length; i++) {
+		var element = listarray[i];
+		element.priority = 0;
+		var name = element.getElementsByTagName('span')[0].innerText;
+		if (regex.test(name)) element.priority = Infinity;
+		if (regexAcronym.test(name)) element.priority += 100;
+		if (element.data.cards) for (j = 0; j < element.data.cards.length; j++) {
+			var card = element.data.cards[j];
+			// = operator intended
+			if (resultcache[card] !== undefined) {
+				if (resultcache[card]) element.priority += 1;
+			} else if (resultcache[card] = regex.test(card) || regexAcronym.test(card)) element.priority += 1;
+		}
+		element.hidden = element.priority === 0;
+	}
+	listarray.sort(function(a, b) {return b.priority - a.priority});
+	for (i = 0; i < listarray.length; i++) {
+		list.appendChild(list.removeChild(listarray[i]));
 	}
 }
 
