@@ -24,10 +24,10 @@ const items = {};
 let loadedEither = false;
 
 function loaded() {
-	if (loadedEither) fs.writeFile("backup.json",
+	if (loadedEither) fs.writeFile("backup-" + new Date().toUTCString() + ".json",
 			JSON.stringify({cards: cards, items: items}), function(err) {
 		if (err) throw err;
-	  console.log('Saved to backup.json');
+	  console.log('Saved to backup');
 	});
 	else loadedEither = true;
 }
