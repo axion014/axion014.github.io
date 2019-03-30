@@ -1,10 +1,15 @@
 body {
 	width: 80%;
 	margin: 40px auto;
+	max-width: 800px;
 }
 
 article {
 	margin: 25px 0;
+}
+
+label {
+	float: right;
 }
 
 #loading {
@@ -17,7 +22,6 @@ article {
 #searchbar {
 	display: block;
 	width: 100%;
-	max-width: 800px;
 	height: 40px;
 	border-radius: 5px;
 	font-size: 28px;
@@ -35,7 +39,6 @@ article {
 }
 
 #list li {
-	max-width: 800px;
 	border-color: gray;
 	border-width: 1px;
 	border-style: solid;
