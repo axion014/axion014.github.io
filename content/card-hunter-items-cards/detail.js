@@ -73,7 +73,7 @@ if (arg.type === "card") { // Card
 		image.src = "http://wiki.cardhuntria.com/wiki/Special:FilePath/" + cards[i] + ".jpeg";
 		(function(i) {
 			image.addEventListener('pointerdown', function() {
-				location.href = "./details.html?type=card&name=" + cards[i];
+				location.href = "./detail.html?type=card&name=" + cards[i];
 			});
 		})(i);
 		cardgroup.appendChild(image);

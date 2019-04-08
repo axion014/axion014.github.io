@@ -1,7 +1,7 @@
 
 const admin = require("firebase-admin");
 const fetch = require("node-fetch");
-const nqdm = require('nqdm')
+const nqdm = require('nqdm');
 
 const serviceAccount = require("./card-hunter-review-index-firebase-adminsdk-x3mlm-030600cb73.json");
 
