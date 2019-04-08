@@ -123,16 +123,15 @@ var newReview = function() {
 					else ba();
 				} else if (inputURL.value.substring(0, 22) === domain) var url = inputURL.value.substring(22);
 				else var url = inputURL.value;
-				if (data) {
-					for (var i = 0; i < data.reviews.length; i++) {
-						if (data.reviews[i].author === inputAuthor.value) {
-							errorText.innerText = "A Review from specified name already exists";
-							throw new Error("Already Reviewed");
-						}
+				if (!data.reviews) data.reviews = [];
+				for (var i = 0; i < data.reviews.length; i++) {
+					if (data.reviews[i].author === inputAuthor.value) {
+						errorText.innerText = "A Review from specified name already exists";
+						throw new Error("Already Reviewed");
 					}
-					data.reviews.push({author: inputAuthor.value, url: url});
-					transaction.update(dataRef, {reviews: data.reviews});
-				} else transaction.set(dataRef, {reviews: [{author: inputAuthor.value, url: url}]});
+				}
+				data.reviews.push({author: inputAuthor.value, url: url});
+				transaction.update(dataRef, {reviews: data.reviews});
 			});
 		}).then(function() {
 			addLink.className = "smalllink";
