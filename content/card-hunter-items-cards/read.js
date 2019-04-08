@@ -21,12 +21,16 @@ function showContents(doc, data) {
 
 const cards = {};
 const items = {};
+const contribution = {};
 let loadedEither = false;
 
 function loaded() {
 	if (loadedEither) fs.writeFile("backup-" + new Date().toUTCString() + ".json",
 			JSON.stringify({cards: cards, items: items}), function(err) {
 		if (err) throw err;
+		for (author in contribution) {
+			console.log(contribution[author] + " reviews from " + author);
+		}
 	  console.log('Saved to backup');
 	});
 	else loadedEither = true;
@@ -37,6 +41,9 @@ db.collection('cards').get().then(function(docs) {
 		const data = doc.data();
 		if (data.reviews) {
 			cards[doc.id] = data.reviews;
+			data.reviews.forEach(function(review) {
+				contribution[review.author] = (contribution[review.author] || 0) + 1;
+			});
 		}
 	});
 	loaded();
@@ -46,6 +53,9 @@ db.collection('items').get().then(function(docs) {
 		const data = doc.data();
 		if (data.reviews) {
 			items[doc.id] = data.reviews;
+			data.reviews.forEach(function(review) {
+				contribution[review.author] = (contribution[review.author] || 0) + 1;
+			});
 		}
 	});
 	loaded();
