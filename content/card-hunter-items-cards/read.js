@@ -35,14 +35,18 @@ function loaded() {
 db.collection('cards').get().then(function(docs) {
 	docs.forEach(function(doc) {
 		const data = doc.data();
-		cards[doc.id] = data;
+		if (data.reviews) {
+			cards[doc.id] = data.reviews;
+		}
 	});
 	loaded();
 }).catch(function(error) {console.error("Error getting document:", error);});
 db.collection('items').get().then(function(docs) {
 	docs.forEach(function(doc) {
 		const data = doc.data();
-		items[doc.id] = data;
+		if (data.reviews) {
+			items[doc.id] = data.reviews;
+		}
 	});
 	loaded();
 }).catch(function(error) {console.error("Error getting document:", error);});
