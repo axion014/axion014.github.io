@@ -102,6 +102,7 @@ fetch("http://live.cardhunter.com/data/gameplay/Cards/Cards.csv").then(function(
 					item.cards.push(cells[i]);
 				}
 				data.items.push(item);
+				db.collection("items").doc(item.name).set(item, {merge: true});
 			}
 		}
 		deletion.then(function() {

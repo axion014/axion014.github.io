@@ -94,10 +94,7 @@ function showData() {
 	data.items.forEach(function(item) {
 		var element = document.createElement('li');
 		var anchor = document.createElement('a');
-		anchor.href = "./detail.html?type=item&name=" + item.name + "&imageurl=" + item.image_url +
-			"&cards=" + (item.cards.length !== 0 ? item.cards.reduce(function(a, b) {
-				return a + '、' + b; // A card name likely won't include this so no need to escape
-			}) : "");
+		anchor.href = "./detail.html?type=item&name=" + item.name;
 		element.data = item;
 		//element.id = item.name;
 		if (item.image_url) {

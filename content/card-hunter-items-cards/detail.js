@@ -19,8 +19,23 @@ var db = firebase.firestore();
 var reviews = document.getElementById('reviews');
 
 function putContents(data) {
-	if (!data.exists) return;
 	data = data.data();
+	if (arg.type === "item") {
+		document.getElementById('icon').src = "http://wiki.cardhuntria.com/wiki/Special:FilePath/" + data.image_url + ".png";
+		var cardgroup = document.getElementById('cards');
+		data.cards.forEach(function(card) {
+			var image = document.createElement('img');
+			image.width = 86;
+			image.height = 120;
+			image.src = "http://wiki.cardhuntria.com/wiki/Special:FilePath/" + card + ".jpeg";
+			(function(i) {
+				image.addEventListener('pointerdown', function() {
+					location.href = "./detail.html?type=card&name=" + card;
+				});
+			})(i);
+			cardgroup.appendChild(image);
+		});
+	}
 	for (var i = 0; i < data.reviews.length; i++) {
 		var review = document.createElement('li');
 		var reviewLink = document.createElement('a');
@@ -62,22 +77,7 @@ if (arg.type === "card") { // Card
 	document.getElementById('wikilink').href = "http://wiki.cardhuntria.com/wiki/Cards/" + arg.name;
 	var dataRef = db.collection("cards").doc(arg.name);
 } else { // Item
-	document.getElementById('icon').src = "http://wiki.cardhuntria.com/wiki/Special:FilePath/" + arg.imageurl + ".png";
 	document.getElementById('wikilink').href = "http://wiki.cardhuntria.com/wiki/Items/" + arg.name;
-	var cards = arg.cards.split('、');
-	var cardgroup = document.getElementById('cards');
-	for (var i = 0; i < cards.length; i++) {
-		var image = document.createElement('img');
-		image.width = 86;
-		image.height = 120;
-		image.src = "http://wiki.cardhuntria.com/wiki/Special:FilePath/" + cards[i] + ".jpeg";
-		(function(i) {
-			image.addEventListener('pointerdown', function() {
-				location.href = "./detail.html?type=card&name=" + cards[i];
-			});
-		})(i);
-		cardgroup.appendChild(image);
-	}
 	var dataRef = db.collection("items").doc(arg.name);
 }
 
