@@ -80,6 +80,7 @@ fetch("http://live.cardhunter.com/data/gameplay/Cards/Cards.csv").then(function(
 				damage: cells[5], rarity: cells[47], quality: cells[40], reviews: []
 			}
 			data.cards.push(card);
+			db.collection("cards").doc(card.name).set(card, {merge: true});
 		}
 	}
 
