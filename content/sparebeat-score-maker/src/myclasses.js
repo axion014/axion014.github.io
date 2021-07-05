@@ -1,3 +1,6 @@
+// 渡された関数が生成する要素を一定間隔ごとに配置し、スクロールに反応して常に画面内の要素だけが読み込まれた状態を保つグループ。
+// 子要素の状態は外部に保存しなければならない。
+// 今になって見ると内部で保存してくれるようになってた方がいいのかと思う。
 phina.define("Infiniteof", {
   superClass: 'phina.display.DisplayElement',
   init: function(source, pitch, options) {
@@ -43,6 +46,7 @@ phina.define("Infiniteof", {
   }
 });
 
+// 子要素を一定間隔あけて自動配置するグループ要素
 phina.define("List", {
   superClass: 'phina.display.DisplayElement',
   renderChildBySelf: true,

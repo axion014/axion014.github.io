@@ -37,6 +37,7 @@ function colorOf(id, mode) {
   else if (id === LONG_END) return mode ? '#118888' : '#00aaaa';
 }
 
+// やっぱりコードが汚い… 自分で言うのもアレですがいっそ書き直した方がいいような気がしている
 phina.define('MainScene', {
   superClass: 'phina.display.DisplayScene',
   init: function() {
@@ -55,13 +56,20 @@ phina.define('MainScene', {
       },
       map: {}
     };
-    this.time = {                  easy: 5,         normal: 5,          hard: 5};
-    this.notesdata = {            easy: [],         normal: [],        hard: []};
-    this.tripletnotesdata = {      easy: [],         normal: [],        hard: []};
-    this.notesCount = {            easy: 0,         normal: 0,          hard: 0};
-    this.notesCountofBar = {      easy: [],         normal: [],        hard: []};
+		// 以下lengthsまで各難易度ごとのデータ
+    this.time = {                  easy: 5,         normal: 5,          hard: 5}; // 小節数
+
+		// ここは列挙型のようなものに置き換えるべきなように思う
+    this.notesdata = {            easy: [],         normal: [],        hard: []}; // 3連符でない部分の譜面を表す表
+    this.tripletnotesdata = {      easy: [],         normal: [],        hard: []}; // 3連符である部分の譜面を表す表
+
+		// この4つはクラスにまとめるべきか
+    this.notesCount = {            easy: 0,         normal: 0,          hard: 0}; // 譜面全体のノーツ数
+    this.notesCountofBar = {      easy: [],         normal: [],        hard: []}; // 小節ごとのノーツ数
+		// 以下アタックノーツに絞った数
     this.attackNotesCount = {      easy: 0,         normal: 0,          hard: 0};
     this.attackNotesCountofBar = {easy: [],         normal: [],        hard: []};
+
     this.lengths = {              easy: Lengths(), normal: Lengths(), hard: Lengths()};
     this.screenBottom = DisplayElement({y: this.height}).addChildTo(this);
     this.score = DisplayElement({x: SCREEN_CENTER_X}).addChildTo(this.screenBottom);
@@ -534,6 +542,7 @@ phina.define('MainScene', {
     this.notes.reset();
     this.tripletnotes.reset();
   },
+	// 内部形式とJSON形式の変換。もはや読めない。
   import: function(score) {
     function dataOf(ch) {
       if (ch === "1" || ch === "2" || ch === "3" || ch === "4") return NORMAL;
