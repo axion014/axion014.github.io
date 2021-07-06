@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+show_help() {
+	cat << EOS
+Usage: ${0##*/} [-hdl]
+	-h          display this help and exit
+	-d          delete duplicates
+	-l          do not show changes, only list changed files
+	-s          limit display to changes since the last run
+EOS
+}
+OPTIND=1
+while getopts hdls opt; do
+	case $opt in
+		h)
+			show_help
+			exit 0
+			;;
+		d)
+			delete=1
+			;;
+		l)
+			list=1
+			;;
+		s)
+			since_last_run=1
+			;;
+		*)
+			show_help >&2
+			exit 1
+		;;
+	esac
+done
+IFS=$'\n'
+cd $(dirname $0)
+if [[ $since_last_run == 1 ]]; then
+	files=$(find . -name 'backup-*.json' -type f -newer $0 -exec stat -f "%Sm %N" -t "%Y%m%d%H%M" {} \;)
+else
+	files=$(find . -name 'backup-*.json' -type f -exec stat -f "%Sm %N" -t "%Y%m%d%H%M" {} \;)
+fi
+for f in $(echo "$files" | sort | cut -c 16-); do
+  if [[ -n $prev ]]; then
+    result=$(json-diff "$prev" "$f")
+    if [[ -z $result ]]; then
+      printf "\e[31m\e[1mNO CHANGES IN $f\e[m"
+      if [[ $delete == 1 ]]; then
+        printf "\e[31m\e[1m; REMOVING $prev\e[m\n"
+        rm -f "$prev"
+      else
+        echo ""
+      fi
+    else
+      if [[ $list != 1 ]]; then
+				printf "\e[33m\e[1mCHANGES IN $f:\e[m\n"
+				echo -e "$result"
+			else
+				printf "\e[33m\e[1mCHANGES IN $f\e[m\n"
+			fi
+    fi
+  fi
+  prev=$f
+done
+touch $0
+unset IFS
