@@ -59,19 +59,14 @@
         border-width: 2px;
         margin: 0 -1px;
       }
-      h1 {
-        font-size: 1em;
-        font-weight: normal;
-        margin: 0;
+      fieldset {
+        border: none;
+        margin: 10px 0;
       }
-      section { margin: 10px 0; }
-      input { width: 1.5em; }
-      #zoom-in, #zoom-out {
-        width: 1.7em;
-        height: 1.7em;
-      }
+      fieldset, legend { padding: 0; }
+      input[type=text] { width: 1.5em; }
+      input[type=range] { vertical-align: middle; }
       button, input { margin-right: 5px; }
-      #speedcalc {}
     </style>
   </head>
   <body>
@@ -121,17 +116,26 @@
       <option data-interval="150" data-action-delay="4" data-damage-delay="0" data-duration="2">癒玉</option>
       <option data-interval="900" data-action-delay="0" data-damage-delay="0" data-duration="0" id="lrobp">遠壁</option>
     </select></label>
-    <section>
-      <h1>激突のタイミングを計算する</h1>
+    <fieldset>
+      <legend>激突のタイミングを計算する</legend>
       <label>計算対象加速: <input type="text" id="subjectspeed" required pattern="\d|1[0-5]"></input></label>
       <label>相手加速: <input type="text" id="objectspeed" required pattern="\d|1[0-5]"></input></label>
       <button id="speedcalc">確定</button>
-    </section>
-    <label>Zoom: <button id="zoom-in">+</button><button id="zoom-out">-</button></label>
+    </fieldset>
+    <label>ズーム: <input type="range" id="zoom" min="-4" max="4"></input></label>
     <script>
       let main = document.getElementById("main");
       let patternStyle = document.styleSheets[0].cssRules[5].style;
-      let scale = 1;
+
+      function delButton() {
+        let del = document.createElement("th");
+        let delButton = document.createElement("button");
+        delButton.textContent = "Remove";
+        delButton.addEventListener("click", () => row.remove());
+        del.append(delButton);
+        return del;
+      }
+
       document.getElementById("newunit").addEventListener("change", e => {
         let selection = e.target.selectedOptions[0];
         e.target.value = "";
@@ -154,13 +158,7 @@
         pattern.style.setProperty("--damage-delay", selection.dataset.damageDelay);
         pattern.style.setProperty("--duration", selection.dataset.duration);
 
-        let del = document.createElement("th");
-        let delButton = document.createElement("button");
-        delButton.textContent = "Remove";
-        delButton.addEventListener("click", () => row.remove());
-        del.append(delButton);
-
-        row.append(header, pattern, del);
+        row.append(header, pattern, delButton());
         main.append(row);
 
         let offset = 0;
@@ -198,28 +196,17 @@
           pattern.releasePointerCapture(e.pointerId);
         });
         pattern.addEventListener("keydown", e => {
-          if (e.code === "KeyA") {
-            updateOffset(-1);
-          } else if (e.code === "KeyD") {
-            updateOffset(1);
-          } else if (e.code === "ArrowLeft" && e.shiftKey) {
+          if (e.code === "KeyA" || e.code === "ArrowLeft" && e.shiftKey) {
             updateOffset(-1);
             e.preventDefault();
-          } else if (e.code === "ArrowRight" && e.shiftKey) {
+          } else if (e.code === "KeyD" || e.code === "ArrowRight" && e.shiftKey) {
             updateOffset(1);
             e.preventDefault();
           }
         });
       });
-      document.getElementById("zoom-in").addEventListener("click", () => {
-        scale *= 2;
-        main.scrollLeft *= 2;
-        patternStyle.setProperty("--scale", scale);
-      });
-      document.getElementById("zoom-out").addEventListener("click", () => {
-        scale /= 2;
-        main.scrollLeft /= 2;
-        patternStyle.setProperty("--scale", scale);
+      document.getElementById("zoom").addEventListener("input", e => {
+        patternStyle.setProperty("--scale", 2 ** parseInt(e.target.value));
       });
 
       let subjectspeed = document.getElementById("subjectspeed");
@@ -247,23 +234,16 @@
         let collisions = [];
         let ax1 = (Number.parseInt(subjectspeed.value) + 1) / 1000;
         let ax2 = -(Number.parseInt(objectspeed.value) + 1) / 1000;
-        let vx1 = 0;
-        let vx2 = 0;
-        let x1 = 50;
-        let x2 = 1110;
-        let rx1 = 50;
-        let rx2 = 1110;
+        let vx1 = 0, vx2 = 0;
+        let x1 = 50, x2 = 1110;
+        let rx1 = 50, rx2 = 1110;
         for (let frame = 0; frame < 8192; frame++) {
-          vx1 += ax1;
-          vx2 += ax2;
-          x1 += vx1;
-          x2 += vx2;
-          rx1 = Math.round(x1);
-          rx2 = Math.round(x2);
+          vx1 += ax1, vx2 += ax2;
+          x1 += vx1, x2 += vx2;
+          rx1 = Math.round(x1), rx2 = Math.round(x2);
           if (rx1 + vx1 >= rx2 + vx2) {
             let tmp = vx1;
-            vx1 = Math.min(vx2, -1);
-            vx2 = Math.max(tmp, 1);
+            vx1 = Math.min(vx2, -1), vx2 = Math.max(tmp, 1);
             collisions.push(frame);
           }
           if (rx1 < 0) {
@@ -278,17 +258,11 @@
         }
 
         let bgpos = "";
-        for (let i = 0; i < collisions.length; i++) bgpos += `calc(var(--scale) * ${collisions[i]}px),`;
+        for (let collision of collisions) bgpos += `calc(var(--scale) * ${collision}px),`;
         pattern.style.setProperty("background-image", "linear-gradient(red, red),".repeat(collisions.length).slice(0, -1));
         pattern.style.setProperty("background-position", bgpos.slice(0, -1));
 
-        let del = document.createElement("th");
-        let delButton = document.createElement("button");
-        delButton.textContent = "Remove";
-        delButton.addEventListener("click", () => row.remove());
-        del.append(delButton);
-
-        row.append(header, pattern, del);
+        row.append(header, pattern, delButton());
         main.append(row);
       });
     </script>

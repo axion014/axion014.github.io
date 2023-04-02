@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>激突乗込座標調整用計算機</title>
+    <style>
+      @namespace svg url(http://www.w3.org/2000/svg);
+      body {
+        display: grid;
+        grid: auto 1fr repeat(4, auto) / min-content auto;
+      }
+      ol {
+        grid-row: 2 / 4;
+        margin: 0 1em 1em 0;
+        user-select: none;
+        width: max-content;
+      }
+      ol:empty { margin: 0; }
+      ol, #accel { padding-inline-start: 40px; }
+      #edit { grid-row: span 2; }
+      #displaysettings, body > label, details { grid-column: span 2; }
+      fieldset, details {
+        margin: 0.3em 0;
+        border: none;
+      }
+      input[type=radio],input[type=checkbox] {
+        margin-inline-end: 0;
+        padding-inline-end: 3px;
+        inline-size: 17px;
+      }
+      ol:not(:empty) ~ #edit { margin-block: 1em; }
+      output:not(:empty) {
+        overflow: scroll;
+        outline: solid 1px #aaa;
+      }
+      output:is(.self, .opponent) svg|svg { background: url(fort.svg) center / contain; }
+      output.stage svg|svg { background: url(ground.svg) center / contain; }
+      svg|svg {
+        transform-origin: top left;
+        fill: none;
+        stroke-width: 20;
+      }
+      * ~ svg|svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        background: none;
+      }
+      .dead, svg|g.highlighted:not(.filtered), svg|g > .highlighted  { stroke-width: 50; }
+      svg|circle { r: 340px; }
+      .staying { stroke: darkgray; }
+      .falling { stroke: navy; }
+      svg|circle.staying { fill: darkgray; }
+      svg|circle.staying.highlighted { stroke: gray; }
+      .flying, .bumped { stroke: crimson; }
+      .dead { stroke: black; }
+      :is(svg|circle.staying, .dead).highlighted { stroke-width: 80; }
+
+      ol:empty ~ #filters,
+      output:not(.limitExceeded:not(.filtered)) ~ div[role=alert],
+      output:not(.filtered.unitchosen) ~ #filters > .selectsegment {
+        display: none;
+      }
+
+      :is(svg|svg, svg|g):not(:is(.selected, .highlighted)), output.filtered > :not(.highlighted) { visibility: hidden; }
+      ol:not(:empty) ~ output, div[role=alert] {
+        margin-block-end: 1.5em;
+        align-self: end;
+      }
+      output, .outputoverlay {
+        box-sizing: border-box;
+        max-width: 500px;
+        height: fit-content;
+        position: relative;
+        grid-area: 3 / 2;
+      }
+      .outputoverlay { background: #ccca; }
+      #filters {
+        display: grid;
+        grid: auto / repeat(3, auto);
+        justify-content: space-between;
+      }
+      #filters > button {
+        appearance: none;
+        border: none;
+        background: #aaaa;
+        min-width: 1.6em;
+        margin: 0.5em;
+      }
+      :is(#selectedsettings, #selectedsegment):hover { background: #acaa; }
+
+      :where(.filtered ~ #filters) > #selectedsettings:hover,
+      :where(.segmentchosen ~ #filters) > #selectedsegment:hover {
+        background: #caaa;
+      }
+
+      #filters > button:not(#selectedsettings)::first-line { vertical-align: 0.2em; }
+      #filters > button:active { background: #888a; }
+      li.selected { background: #00f1; }
+      li.highlighted { background: #f001; }
+      fieldset, legend { padding: 0; }
+      legend { float: left; }
+      input[type=range] { vertical-align: middle; }
+    </style>
+  </head>
+  <body>
+    <span id="accel"></span><ol id="units"></ol>
+    <form id="edit"></form><output id="output"></output>
+    <nav id="filters" class="outputoverlay">
+      <button id="selectprevsettings">←</button>
+      <button id="selectedsettings">環境を絞り込む</button>
+      <button id="selectnextsettings">→</button>
+      <button id="selectprevsegment" class="selectsegment">←</button>
+      <button id="selectedsegment" class="selectsegment">詳細表示</button>
+      <button id="selectnextsegment" class="selectsegment">→</button>
+    </nav>
+    <div class="outputoverlay" role="alert">描画負荷を考慮して、計算結果の一部を表示していません。表示する玉の数、加速度の数、もしくは対戦環境の数を減らしてください。</div>
+    <form id="displaysettings">
+      <fieldset id="perspective">
+        <legend>基準点を選ぶ:</legend>
+        <input type="radio" name="perspective" id="rel_to_opponent" value="opponent" checked></input><label for="rel_to_opponent">相手</label>
+        <input type="radio" name="perspective" id="rel_to_stage" value="stage"></input><label for="rel_to_stage">地面</label>
+        <input type="radio" name="perspective" id="rel_to_self" value="self"></input><label for="rel_to_self">自分</label>
+      </fieldset>
+      <fieldset id="gamesettings">
+        <legend>環境を選ぶ:</legend>
+        <input type="checkbox" name="settings" id="show_1p" checked></input><label for="show_1p">1p</label>
+        <input type="checkbox" name="settings" id="show_2p"></input><label for="show_2p">2p</label>
+        <input type="checkbox" name="settings" id="show_h" checked></input><label for="show_h">H画質</label>
+        <input type="checkbox" name="settings" id="show_m"></input><label for="show_m">M画質</label>
+        <input type="checkbox" name="settings" id="show_l"></input><label for="show_l">L画質</label>
+      </fieldset>
+      <fieldset>
+        <label>対象加速を選ぶ: <input type="text" id="targetspeed" required pattern="^(?!(?:(?:\d|1[0-5]),)*(\d|1[0-5])(?=,).*,\1(?:,|$))(?:\d|1[0-5])(?:,(?:\d|1[0-5]))*$" placeholder="0,1,2"></input></label>
+        <button id="confirmspeed" type="button">確定</button>
+      </fieldset>
+      <label>ズーム: <input type="range" id="zoom" value="0" min="0" max="3" step="any"></input></label>
+    </form>
+    <label>パスワードを読み込む: <input type="text" id="pass" placeholder="000P6R"></input></label>
+    <script type="module">
+      let canvas = document.createElement("canvas");
+      canvas.width = 7700;
+      canvas.height = 2180;
+      canvas = canvas.getContext("2d");
+
+      let hitAreaId = ["fort_h", "core_h", "wall_h"];
+      let hitAreas = {};
+      let bitmaps = await Promise.all((await Promise.all((await Promise.all(
+        hitAreaId.map(id => fetch(`${id}.png`)))).map(response => response.blob())
+      )).map(blob => createImageBitmap(blob)));
+      for (let i = 0; i < bitmaps.length; i++) {
+        canvas.drawImage(bitmaps[i], 0, 0);
+        let hitArea = canvas.getImageData(0, 0, bitmaps[i].width, bitmaps[i].height);
+        hitAreas[hitAreaId[i]] = [];
+        for (let y = 0; y < hitArea.height; y++) {
+          hitAreas[hitAreaId[i]][y] = new Uint8ClampedArray(hitArea.width);
+          for (let x = 0; x < hitArea.width; x++) {
+            hitAreas[hitAreaId[i]][y][x] = hitArea.data[(x + y * hitArea.width) * 4];
+          }
+        }
+      }
+      canvas = hitAreaId = bitmaps = undefined;
+
+      let svg = "http://www.w3.org/2000/svg";
+      let perspectives = ["opponent", "stage", "self"];
+
+      let targetspeed = document.getElementById("targetspeed");
+      let confirmspeed = document.getElementById("confirmspeed");
+      let perspective = document.getElementById("perspective");
+      let gamesettings = document.getElementById("gamesettings");
+
+      targetspeed.setCustomValidity("0~15の数字を半角カンマ(,)区切りでスペースを入れずに入力してください");
+
+      function checkValidity() {
+        confirmspeed.disabled = targetspeed.validity.patternMismatch || targetspeed.validity.valueMissing;
+        if (confirmspeed.disabled) targetspeed.reportValidity();
+      }
+      checkValidity();
+      targetspeed.addEventListener("input", checkValidity);
+
+      let savedTargetSpeed = [0], accel = 0;
+      let basePosition = Array(16).fill(null).map(() => []), simulationResult = {};
+      let scale = 1, selectedUnits = [], selectedUnit = null, selectedCount = 0;
+      let selectedSettings = null, selectedSettingsIndex = null, selectedSegment = null;
+
+      let pass = document.getElementById("pass");
+      let zoom = document.getElementById("zoom");
+      let accelLabel = document.getElementById("accel");
+      let edit = document.getElementById("edit");
+      let units = document.getElementById("units");
+      let output = document.getElementById("output");
+      let outputStyle = document.styleSheets[0].cssRules[13].style;
+
+      confirmspeed.addEventListener("click", () => {
+        savedTargetSpeed = targetspeed.value.split(",").map(s => parseInt(s));
+        updateSimulation();
+      });
+
+      perspective.addEventListener("input", updateSimulation);
+      gamesettings.addEventListener("input", updateSimulation);
+
+      pass.setCustomValidity("パスワードが違います!");
+
+      if (!confirmspeed.disabled) savedTargetSpeed = targetspeed.value.split(",").map(s => parseInt(s));
+
+      pass.addEventListener("input", e => {
+        zoom.value = 0;
+        accelLabel.textContent = "";
+        units.replaceChildren();
+        output.replaceChildren();
+        simulationResult = {};
+        selectedUnits = [], selectedUnit = null, selectedSettings = null;
+        accel = 0;
+
+        let pass = e.target.value.trim();
+        e.target.value = "";
+
+        if (pass.length % 6) return e.target.reportValidity();
+        let count = pass.length / 6;
+
+        let unitsToAppend = [];
+
+        for (let i = 0; i < count; i++) {
+          let type = "玉";
+          if (i === 0) type = "コア";
+          else if (pass[i * 6] === "L") type = "采玉";
+          else if (pass[i * 6] === "T") type = "近壁";
+          else if (pass[i * 6] === "U") type = "遠壁";
+          else if (pass[i * 6] === "t") accel++;
+          else if (pass[i * 6] === "u") accel += 2;
+
+          if ("pqrstuWVXY".includes(pass[i * 6])) type = "壁";
+
+          let data = Array.from(pass.slice(i * 6 + 1, i * 6 + 6))
+            .map(char => char.charCodeAt(0))
+            .reduce((sum, char, j) => sum + (char - [0, 48, 29, 87][char >> 5]) * 61 ** (4 - j), 0);
+          let x = Math.floor(data / 1000) % 1000 - (i === 0 ? 52 : 16);
+          let y = data % 1000 - (i === 0 ? 58 : 20);
+          if (i === 0 && (x > 276 || y > 276) || x < 0 || x > 348 || y < 0 || y > 349) return e.target.reportValidity();
+
+          let unit = document.createElement("li");
+          unit.textContent = `${type}(${x}, ${y})`;
+          unit.tabIndex = 0;
+          unit.dataset.type = type;
+          unit.dataset.logical_x = x + 16, unit.dataset.logical_y = y + 20;
+
+          if (type === "コア") { x -= 18.5, y -= 16.5; }
+          else if (!type.includes("玉")) { x -= 17.85, y -= 18.5; }
+
+          unit.dataset.x = x * 20 + 1320, unit.dataset.y = y * 20 + 3040;
+          if (type === "采玉") {
+            unit.dataset.a = Math.floor(data / 1000000) % 1000;
+            unit.textContent = unit.textContent.replace(")", `, ${unit.dataset.a})`);
+          }
+          unitsToAppend.push(unit);
+        }
+        scale = 1;
+        outputStyle.setProperty("scale", 1);
+        units.append.apply(units, unitsToAppend);
+        accelLabel.textContent = accel + "速";
+        
+        updateSimulation();
+      });
+
+      DOMTokenList.prototype.set = function(className, value) {
+        if (value) this.add(className); else this.remove(className);
+      };
+
+      function updateSimulation() {
+        if (!units.hasChildNodes()) return;
+        output.classList.remove.apply(output.classList, perspectives);
+        output.classList.add(document.getElementById("displaysettings").elements["perspective"].value);
+        let renderedUnits = 0;
+        selectedCount = 0;
+        for (let s = 0; s <= 15; s++) {
+          for (let aa of ["h", "m", "l"]) {
+            for (let side of [0, 1]) {
+              let selected = savedTargetSpeed.includes(s) &&
+                document.getElementById(`show_${aa}`).checked &&
+                document.getElementById(`show_${side + 1}p`).checked;
+
+              let simulationId = `${s}_${aa}_${side}`;
+              if (selected) {
+                selectedCount++;
+                renderedUnits += getUnits().filter(u =>
+                  u.type.includes("玉") && (selectedUnits.length === 0 || selectedUnits.includes(u))
+                ).length;
+              } else if (selectedSettings === simulationId) selectedSettings = selectedSettingsIndex = selectedSegment = null;   
+
+              if (selected && !simulationResult[simulationId]) {
+                simulationResult[simulationId] = simulateWithParams(s, aa, side);
+              }
+              for (let perspective of perspectives) {
+                let targetId = `${simulationId}_${perspective}`;
+                let target = document.getElementById(targetId);
+                if (selected && document.getElementById("displaysettings").elements["perspective"].value === perspective) {
+                  perspective = { name: perspective };
+                  if (!target) {
+                    if (perspective.name === "self") {
+                      perspective.x = f => basePosition[accel][s][f].x0 - 15350;
+                      perspective.y = f => basePosition[accel][s][f].y0 - 10320;
+                    } else if (perspective.name === "opponent") {
+                      perspective.x = f => basePosition[accel][s][f].x1 - 15350;
+                      perspective.y = f => basePosition[accel][s][f].y1 - 10320;
+                    } else perspective.x = perspective.y = f => 0;
+
+                    target = renderWithParams(simulationResult[simulationId], targetId, perspective);
+                  }
+                  getUnits().filter(u => u.type.includes("玉")).forEach((unit, i) => {
+                    target.children[i].setAttribute("class", unit.domElement.className);
+                    target.children[i].classList.set("filtered", selectedUnit === unit.domElement && selectedSegment !== null);
+                    for (let j = 0; j < target.children[i].children.length; j++) {
+                      if (selectedSettings === simulationId && selectedUnit === unit.domElement && selectedSegment === j) {
+                        let segment = target.children[i].children[j];
+                        segment.classList.add("highlighted");
+
+                        let convertX = x => (x / 20 + (perspective.name === "stage" ? 0.5 : -786)).toFixed(2).replace(/(.0)?0$/, "");
+                        let convertY = y => (y / 20 - 152.5).toFixed(2).replace(/(.0)?0$/, "");
+
+                        let state;
+                        if (segment.classList.contains("dead")) state = "死亡";
+                        else if (segment.classList.contains("flying")) state = "飛行中";
+                        else if (segment.classList.contains("staying")) state = "待機中";
+                        else if (segment.classList.contains("falling")) state = "落下中";
+                        else if (segment.classList.contains("bumped")) state = "乗上";
+
+                        document.getElementById("selectedsegment").textContent = `${state}・開始${segment.dataset.start}フレーム(`;
+                        if (state === "死亡" || state === "飛行中") {
+                          document.getElementById("selectedsegment").textContent +=
+`${convertX(segment.dataset.x)}, ${convertY(segment.dataset.y)})`;
+                        } else if (segment.tagName === "circle") {
+                          document.getElementById("selectedsegment").textContent +=
+`${convertX(segment.cx.baseVal.value)}, ${convertY(segment.cy.baseVal.value)})~${segment.dataset.end}フレーム`;
+                        } else {
+                          document.getElementById("selectedsegment").textContent +=
+`${convertX(segment.dataset.sx)}, ${convertY(segment.dataset.sy)})~${segment.dataset.end}フレーム(${convertX(segment.dataset.ex)}, ${convertY(segment.dataset.ey)})`;
+                        }
+                      } else target.children[i].children[j].classList.remove("highlighted");
+                    }
+                    if (selectedUnits.length === 0) target.children[i].classList.add("selected");
+                  });
+                  if (renderedUnits <= 96) target.classList.add("selected");
+                  if (!selectedSettings && selectedSettingsIndex === selectedCount - 1) selectedSettings = simulationId;
+                  if (selectedSettings === simulationId) {
+                    document.getElementById("selectedsettings").textContent = `対${s}速・${side + 1}p・${aa.toUpperCase()}画質`;
+                    selectedSettingsIndex = selectedCount - 1;
+                    target.classList.add("highlighted");
+                  } else target.classList.remove("highlighted");
+                } else if (target) target.classList.remove("selected", "highlighted");
+              }
+            }
+          }
+        }
+        output.classList.set("limitExceeded", renderedUnits > 96);
+        if (selectedSettings === null && selectedSettingsIndex === null) {
+          document.getElementById("selectedsettings").textContent = "環境を絞り込む";
+        }
+        if (selectedSegment === null) document.getElementById("selectedsegment").textContent = "詳細表示";
+        if (selectedCount === 1) document.querySelector("output > .selected").classList.add("highlighted");
+        output.classList.set("segmentchosen", document.querySelector("output > .highlighted > .highlighted > .highlighted"));
+        output.classList.set("unitchosen", document.querySelector("output > .highlighted > .highlighted"));
+        output.classList.set("filtered", document.querySelector("output > .highlighted"));
+        document.getElementById("filters").style.visibility = selectedCount > 1 ? "visible" : "hidden";
+      }
+
+      window.getUnits = function() {
+        return Array.from(document.getElementById("units").childNodes).map(unit => {
+          unit = {
+            domElement: unit,
+            type: unit.dataset.type,
+            on_side: 0,
+            a: parseInt(unit.dataset.a) * Math.PI / 180,
+            x: parseInt(unit.dataset.x), y: parseInt(unit.dataset.y),
+            logical_x: parseInt(unit.dataset.logical_x), logical_y: parseInt(unit.dataset.logical_y),
+            vx: 0, vy: 0
+          };
+          if (unit.type === "遠壁") unit.cnt = unit.logical_x;
+          if (unit.type === "采玉") unit.cnt = -unit.logical_x % 200;
+          return unit;
+        });
+      }
+
+      window.simulateWithParams = function(speed, aa, side) {
+        if (!basePosition[accel][speed]) basePosition[accel][speed] = simulateBaseMovement(speed);
+
+        let units = getUnits();
+        let result = Array(units.length).fill(null).map(() => []);
+
+        for (let frame = 0; frame < 8192; frame++) {
+          for (let i = 0; i < units.length; i++) {
+            let unit = units[i];
+            let state = result[i][frame - 1]?.state ?? (unit.type.includes("玉") ? "staying" : undefined);
+            if (state === "dead") {
+              result[i][frame] = {x: unit.x, y: unit.y, state, on_side: unit.on_side};
+              continue;
+            }
+
+            function jump(vx, vy) {
+              state = "flying";
+              unit.on_side = -1;
+              unit.vx = vx, unit.vy = vy;
+            }
+
+            let baseState = basePosition[accel][speed][frame];
+            if (state === "flying") unit.vy += 6.4;
+            else if (unit.on_side !== -1) {
+              if (unit.type.includes("玉")) unit.vy += 20;
+              unit.x += baseState[`dx${unit.on_side}`], unit.y += baseState[`dy${unit.on_side}`];
+            }
+            unit.x += side ? Math.ceil(unit.vx) : Math.floor(unit.vx);
+            unit.y = Math.trunc(unit.y + unit.vy);
+            if (unit.y >= 11320) {
+              state = "staying";
+              unit.on_side = -1;
+              unit.y = 11320;
+              unit.vx = unit.vy = 0;
+            }
+            if (unit.type.includes("玉") && unit.on_side !== -1) {
+              let bumps = 0;
+              function bump() {
+                unit.y -= 20;
+                unit.vy = 0;
+                bumps++;
+              }
+              if (!unit.on_side) for (let j = 0; j < units.length; j++) if (
+                units[j].type.includes("壁") &&
+                hitAreas[`wall_${aa}`][unit.y + 300 - units[j].y]?.[unit.x - units[j].x] || 
+                units[j].type === "コア" &&
+                hitAreas[`core_${aa}`][unit.y + 300 - units[j].y]?.[unit.x - units[j].x]
+              ) {
+                bump();
+                j = -1;
+              }
+              while (hitAreas[`fort_${aa}`]
+                [unit.y + 300 - baseState[`y${unit.on_side}`]]?.
+                [unit.x - baseState[`x${unit.on_side}`]]
+              ) bump();
+
+              if (bumps * 20 > Math.max(-baseState[`dy${unit.on_side}`] + 60, 60)) state = "bumped";
+              else if (bumps) state = "staying";
+              else state = "falling";
+            }
+            if (unit.type === "遠壁") {
+              if (unit.cnt === 901) unit.cnt = 1;
+              unit.cnt++;
+            } else if (unit.type.includes("玉")) {
+              if (state === "flying") {
+                if (hitAreas[`fort_${aa}`][unit.y + 300 - baseState.y1]?.[unit.x - baseState.x1]) {
+                  state = "staying";
+                  unit.on_side = 1;
+                  unit.vx = 0;
+                } else if (hitAreas[`fort_${aa}`][unit.y - baseState.y1]?.[unit.x + 320 - baseState.x1]) {
+                  unit.vx = 0;
+                }
+                if (unit.x < 0 || unit.x > 38400) state = "dead";
+              } else if (state === "staying" && result[i][frame - 1]?.state === "staying" && unit.y === 11320) {
+                if (hitAreas[`fort_${aa}`][unit.y - baseState.y1]?.[unit.x - baseState.x1]) state = "dead";
+              }
+              if (unit.on_side) {
+                if (state !== "flying") {
+                  let heedCommand = id => jump(Math.cos(units[id].a) * 80, Math.min(Math.sin(units[id].a) * 80, 0) - 40);
+                  for (let j = 0; j < i; j++) if (units[j].type === "采玉" && units[j].cnt === 206) heedCommand(j);
+                  for (let j = 0; j < units.length; j++) if (units[j].type === "采玉" && units[j].cnt === 205) heedCommand(j);
+                }
+              } else for (let j = 0; j < units.length; j++) {
+                let offsetY = unit.y + 700;
+                if (units[j].type === "近壁" && (
+                  i > j && basePosition[accel][speed][frame - 1]?.hit &&
+                  hitAreas[`wall_${aa}`][offsetY - units[j].y]?.[unit.x - units[j].x] ||
+                  basePosition[accel][speed][frame - 2]?.hit &&
+                  hitAreas[`wall_${aa}`][offsetY - result[j][frame - 1].y]?.[unit.x - result[j][frame - 1].x]
+                )) jump(80, -160);
+
+                if (units[j].type === "遠壁" && (
+                  units[j].cnt === 900 &&
+                  hitAreas[`wall_${aa}`][offsetY - units[j].y]?.[unit.x - units[j].x] ||
+                  i > j && units[j].cnt === 901 &&
+                  hitAreas[`wall_${aa}`][offsetY - result[j][frame - 1].y]?.[unit.x - result[j][frame - 1].x]
+                )) jump(300, -80);
+              }
+              if (unit.type === "采玉") {
+                if (unit.cnt === 206) unit.cnt = 1;
+                if (unit.cnt === 205 || state !== "flying") unit.cnt++;
+              }
+            }
+            result[i][frame] = {x: unit.x, y: unit.y, state, on_side: unit.on_side};
+          }
+        }
+
+        for (let unit of result) {
+          let fallcount = 0;
+          for (let frame = 0; frame < 8192; frame++) {
+            if (unit[frame].state === "falling") fallcount++;
+            else {
+              if (fallcount < 5) for (let i = frame - fallcount; i < frame; i++) unit[i].state = "staying";
+              fallcount = 0;
+            }
+          }
+        }
+
+        return result;
+      }
+
+      function renderWithParams(result, targetId, perspective) {
+        let target = document.createElementNS(svg, "svg");
+        target.id = targetId;
+        target.setAttribute("viewBox", "0 -10000 38400 25600");
+
+        let units = getUnits();
+        for (let i = 0; i < result.length; i++) {
+          if (!units[i].type.includes("玉")) continue;
+          let group = document.createElementNS(svg, "g");
+          target.append(group);
+
+          let progress = 0;
+          for (let frame = 1; frame < 8192; frame++) {
+            if (result[i][frame].state === result[i][frame - 1].state) continue;
+            renderSegment(result[i], perspective, target, group, progress, frame - 1, result[i][frame - 1].state);
+            progress = frame;
+          }
+          renderSegment(result[i], perspective, target, group, progress, 8191, result[i][8191].state);
+        }
+        output.append(target);
+        return target;
+      }
+
+      function renderSegment(data, perspective, target, group, start, end, state) {
+        if (state === "dead") {
+          let path = document.createElementNS(svg, "path");
+          path.classList.add("dead");
+          path.dataset.start = start;
+          path.dataset.x = data[start].x - perspective.x(start);
+          path.dataset.y = data[start].y - perspective.y(start);
+          group.append(path);
+          path.setAttribute("d", `
+m${path.dataset.x},${path.dataset.y - 170},0,-170 
+m120,220,120,-120 m-70,240,170,0 m-220,120,120,120 m-240,-70,0,170 m-120,-220,-120,120 m70,-240,-170,0 m220,-120,-120,-120
+`);
+          return;
+        }
+        if (state === "flying") {
+          for (let frame = start; frame < end; frame++) {
+            let point = document.createElementNS(svg, "circle");
+            point.classList.add("flying");
+            point.dataset.start = frame;
+            point.dataset.x = data[frame].x - perspective.x(frame);
+            point.dataset.y = data[frame].y - perspective.y(frame);
+            group.append(point);
+            point.setAttribute("cx", point.dataset.x);
+            point.setAttribute("cy", point.dataset.y);
+          }
+          return;
+        }
+        if (state === "staying" && (
+          perspective.name === "self" && !data[start].on_side ||
+          perspective.name === "opponent" && data[start].on_side === 1 ||
+          perspective.name === "stage" && data[start].on_side === -1
+        )) {
+          if (start === end) return;
+          let point = document.createElementNS(svg, "circle");
+          point.classList.add("staying");
+          point.dataset.start = start;
+          point.dataset.end = end;
+          group.append(point);
+          point.setAttribute("cx", data[start].x - perspective.x(start));
+          point.setAttribute("cy", data[start].y - perspective.y(start));
+          return;
+        }
+        let polyline = document.createElementNS(svg, "polyline");
+        if (start !== 0 && data[start - 1].state === "flying" && data[start - 1].state === "dead") start--;
+        if (start === end) return;
+        polyline.classList.add(state);
+        group.append(polyline);
+        polyline.dataset.start = start;
+        polyline.dataset.end = end;
+        polyline.dataset.sx = data[start].x - perspective.x(start);
+        polyline.dataset.sy = data[start].y - perspective.y(start);
+        polyline.dataset.ex = data[end].x - perspective.x(end);
+        polyline.dataset.ey = data[end].y - perspective.y(end);
+
+        for (let frame = start; frame <= end; frame++) {
+          let point = target.createSVGPoint();
+          point.x = data[frame].x - perspective.x(frame), point.y = data[frame].y - perspective.y(frame);
+          if (
+            frame !== start &&
+            point.x === data[frame - 1].x - perspective.x(frame - 1) &&
+            point.y === data[frame - 1].y - perspective.y(frame - 1)
+          ) continue;
+          polyline.points.appendItem(point);
+        }
+      }
+
+      window.simulateBaseMovement = speed => {
+        let result = [];
+        let ax1 = (accel + 1) / 50, ax2 = -(speed + 1) / 50;
+        let vx1 = 0, vx2 = 0, vy1 = 0, vy2 = 0;
+        let x1 = 950, x2 = 29750, y1 = 10310, y2 = 10310;
+        let rx1 = x1, rx2 = x2, ry1 = y1, ry2 = y2;
+
+        for (let frame = 0; frame < 8192; frame++) {
+          vx1 += ax1, vx2 += ax2, vy1++, vy2++;
+          x1 += vx1, x2 += vx2, y1 += vy1, y2 += vy2;
+
+          if (y1 > 10310) {
+            y1 = 10310;
+            vy1 = -vy1 / 2;
+          }
+          if (y2 > 10310) {
+            y2 = 10310;
+            vy2 = -vy2 / 2;
+          }
+
+          rx1 = Math.round(x1 - (x1 + 1000) % 20), rx2 = Math.round(x2 - x2 % 20);
+          ry1 = Math.round(y1 - (y1 + 10000) % 20), ry2 = Math.round(y2 - (y2 + 10000) % 20);
+
+          result[frame] = {x0: rx1, y0: ry1, x1: rx2, y1: ry2};
+          result[frame].dx0 = result[frame].x0 - (result[frame - 1]?.x0 ?? 950);
+          result[frame].dy0 = result[frame].y0 - (result[frame - 1]?.y0 ?? 10310);
+          result[frame].dx1 = result[frame].x1 - (result[frame - 1]?.x1 ?? 29750);
+          result[frame].dy1 = result[frame].y1 - (result[frame - 1]?.y1 ?? 10310);
+
+          if (rx1 < -50) {
+            x1 = -30;
+            vx1 = -vx1 / 2;
+          }
+          if (rx2 > 30750) {
+            x2 = 30730;
+            vx2 = -vx2 / 2;
+          }
+
+          if (rx2 + vx2 - rx1 - vx1 <= 7600) {
+            let tmp = vx1;
+            vx1 = Math.min(vx2, -20), vx2 = Math.max(tmp, 20);
+            vy1 = vx1 * -2, vy2 = vx2 * 2;
+            result[frame].hit = true;
+          }
+        }
+        return result;
+      };
+
+      zoom.addEventListener("input", e => {
+        let scaleChange = 2 ** parseFloat(zoom.value) - scale;
+        scale += scaleChange;
+        outputStyle.setProperty("scale", scale);
+
+        output.scrollBy(
+          (output.scrollLeft + output.clientWidth / 2) * scaleChange / scale + Math.sign(scaleChange) / 2,
+          (output.scrollTop + output.clientHeight / 2) * scaleChange / scale + Math.sign(scaleChange) / 2
+        );
+      });
+
+      function selectUnit(e) {
+        if (!e.target.dataset.type?.includes?.("玉")) return;
+        let multi = e.shiftKey || e.ctrlKey;
+        if (multi) {
+          if (!selectedUnits.includes(e.target)) {
+            e.target.classList.add("selected");
+            selectedUnits.push(e.target);
+          } else {
+            if (e.target === selectedUnit) selectedUnit = selectedSegment = null;
+            e.target.classList.remove("selected", "highlighted");
+            selectedUnits.splice(selectedUnits.indexOf(e.target), 1);
+          }
+        } else {
+          selectedSegment = null;
+          if (selectedUnits.length === 1) {
+            selectedUnits[0].classList.remove("selected");
+            selectedUnits = [];
+          }
+          if (e.target !== selectedUnit) {
+            if (selectedUnit) selectedUnit.classList.remove("highlighted");
+            if (!selectedUnits.includes(e.target)) selectedUnits.push(e.target);
+            selectedUnit = e.target;
+            e.target.classList.add("selected", "highlighted");
+          } else {
+            selectedUnit = null;
+            e.target.classList.remove("highlighted");
+          }
+        }
+
+        updateSimulation();
+      }
+
+      units.addEventListener("click", selectUnit);
+      units.addEventListener("keydown", e => (e.key === " " || e.key === "Enter") && selectUnit(e));
+
+      document.getElementById("selectedsettings").addEventListener("click", () => {
+        selectedSettings = selectedSegment = null;
+        selectedSettingsIndex = selectedSettingsIndex === null ? 0 : null;
+        updateSimulation();
+      });
+
+      document.getElementById("selectedsegment").addEventListener("click", () => {
+        selectedSegment = selectedSegment === null ? 0 : null;
+        updateSimulation();
+      });
+
+      let selectSettings = delta => e => {
+        selectedSettings = selectedSegment = null;
+        if (selectedSettingsIndex === null) selectedSettingsIndex = delta > 0 ? 0 : selectedCount - 1;
+        else {
+          selectedSettingsIndex += selectedCount + delta * ((e.shiftKey || e.ctrlKey) && selectedCount >= 20 ? 10 : 1);
+          selectedSettingsIndex %= selectedCount;
+        }
+        updateSimulation();
+      };
+
+      document.getElementById("selectprevsettings").addEventListener("click", selectSettings(-1));
+      document.getElementById("selectnextsettings").addEventListener("click", selectSettings(1));
+
+      let selectSegment = delta => e => {
+        let count = document.querySelector(`[id^="${selectedSettings}"] > .highlighted`).children.length;
+        if (selectedSegment === null) selectedSegment = delta > 0 ? 0 : count - 1;
+        else {
+          selectedSegment += count + delta * ((e.shiftKey || e.ctrlKey) && count >= 20 ? 10 : 1);
+          selectedSegment %= count;
+        }
+        updateSimulation();
+      };
+
+      document.getElementById("selectprevsegment").addEventListener("click", selectSegment(-1));
+      document.getElementById("selectnextsegment").addEventListener("click", selectSegment(1));
+    </script>
+    <details>
+      <summary>注意点</summary>
+      Flashの当たり判定は仕様が完全には解明されていないため、この計算機には僅かな誤差がある。
+    </details>
+  </body>
+</html>
