@@ -125,6 +125,7 @@
     <label>ズーム: <input type="range" id="zoom" min="-4" max="4"></input></label>
     <script>
       let main = document.getElementById("main");
+      let zoom = document.getElementById("zoom");
       let patternStyle = document.styleSheets[0].cssRules[5].style;
 
       function delButton() {
@@ -186,7 +187,7 @@
         }
         updateOffset(0);
 
-        function slide(e) { updateOffset(e.movementX / scale); }
+        let slide = e => updateOffset(e.movementX / 2 ** parseInt(zoom.value));
         pattern.addEventListener("pointerdown", e => {
           pattern.addEventListener("pointermove", slide);
           pattern.setPointerCapture(e.pointerId);
@@ -205,17 +206,13 @@
           }
         });
       });
-      document.getElementById("zoom").addEventListener("input", e => {
-        patternStyle.setProperty("--scale", 2 ** parseInt(e.target.value));
-      });
+      zoom.addEventListener("input", e => patternStyle.setProperty("--scale", 2 ** parseInt(zoom.value)));
 
       let subjectspeed = document.getElementById("subjectspeed");
       let objectspeed = document.getElementById("objectspeed");
       let speedcalc = document.getElementById("speedcalc");
 
-      function checkValidity() {
-        speedcalc.disabled = !(subjectspeed.checkValidity() && objectspeed.checkValidity());
-      }
+      let checkValidity = () => speedcalc.disabled = !(subjectspeed.checkValidity() && objectspeed.checkValidity());
       checkValidity();
       subjectspeed.addEventListener("input", checkValidity);
       objectspeed.addEventListener("input", checkValidity);
