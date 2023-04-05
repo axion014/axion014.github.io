@@ -128,47 +128,53 @@
       let zoom = document.getElementById("zoom");
       let patternStyle = document.styleSheets[0].cssRules[5].style;
 
-      function delButton() {
+      function createRow(title, className) {
+        let row = document.createElement("tr");
+
+        let header = document.createElement("th");
+        let name = document.createElement("label");
+        name.textContent = title;
+        header.append(name);
+
+        let pattern = document.createElement("td");
+        pattern.tabIndex = 0;
+        pattern.classList.add(className);
+        pattern.setAttribute("role", "img");
+
         let del = document.createElement("th");
         let delButton = document.createElement("button");
         delButton.textContent = "Remove";
         delButton.addEventListener("click", () => row.remove());
         del.append(delButton);
-        return del;
+
+        row.append(header, pattern, del);
+        main.append(row);
+        return {row, pattern};
       }
 
       document.getElementById("newunit").addEventListener("change", e => {
         let selection = e.target.selectedOptions[0];
         e.target.value = "";
+        let {row, pattern} = createRow(selection.value, selection.id === "lrobp" ? "lrobp" : "pattern");
 
-        let row = document.createElement("tr");
-        let header = document.createElement("th");
-        let name = document.createElement("label");
-        name.textContent = selection.value;
         let x = document.createElement("label");
         x.classList.add("x");
         x.setAttribute("role", "math");
-        header.append(name, x);
+        row.children[0].append(x);
 
-        let pattern = document.createElement("td");
-        pattern.tabIndex = 0;
-        pattern.classList.add(selection.id === "lrobp" ? "lrobp" : "pattern");
-        pattern.setAttribute("role", "img");
         pattern.style.setProperty("--interval", selection.dataset.interval);
         pattern.style.setProperty("--action-delay", selection.dataset.actionDelay);
         pattern.style.setProperty("--damage-delay", selection.dataset.damageDelay);
         pattern.style.setProperty("--duration", selection.dataset.duration);
 
-        row.append(header, pattern, delButton());
-        main.append(row);
-
         let offset = 0;
         let interval = Number.parseInt(selection.dataset.interval);
-        function updateOffset(change) {
+        function updateOffset(change, e) {
+          if (e) e.preventDefault();
           if (selection.id === "lrobp") change = -change;
           offset = ((offset + change) % interval + interval + 0.5) % interval - 0.5;
           let roundedOffset = Math.round(offset);
-          
+
           if (selection.id === "lrobp") {
             if (roundedOffset > 348) {
               if (change > 0) offset = roundedOffset = roundedOffset - 349;
@@ -197,13 +203,8 @@
           pattern.releasePointerCapture(e.pointerId);
         });
         pattern.addEventListener("keydown", e => {
-          if (e.code === "KeyA" || e.code === "ArrowLeft" && e.shiftKey) {
-            updateOffset(-1);
-            e.preventDefault();
-          } else if (e.code === "KeyD" || e.code === "ArrowRight" && e.shiftKey) {
-            updateOffset(1);
-            e.preventDefault();
-          }
+          if (e.code === "KeyA" || e.code === "ArrowLeft" && e.shiftKey) updateOffset(-1, e);
+          else if (e.code === "KeyD" || e.code === "ArrowRight" && e.shiftKey) updateOffset(1, e);
         });
       });
       zoom.addEventListener("input", e => patternStyle.setProperty("--scale", 2 ** parseInt(zoom.value)));
@@ -217,16 +218,7 @@
       subjectspeed.addEventListener("input", checkValidity);
       objectspeed.addEventListener("input", checkValidity);
       speedcalc.addEventListener("click", () => {
-        let row = document.createElement("tr");
-        let header = document.createElement("th");
-        let name = document.createElement("label");
-        name.textContent = `${subjectspeed.value}速対${objectspeed.value}速`;
-        header.append(name);
-
-        let pattern = document.createElement("td");
-        pattern.tabIndex = 0;
-        pattern.classList.add("speedcalc");
-        pattern.setAttribute("role", "img");
+        let {row, pattern} = createRow(`${subjectspeed.value}速対${objectspeed.value}速`, "speedcalc");
 
         let collisions = [];
         let ax1 = (Number.parseInt(subjectspeed.value) + 1) / 1000;
@@ -258,9 +250,6 @@
         for (let collision of collisions) bgpos += `calc(var(--scale) * ${collision}px),`;
         pattern.style.setProperty("background-image", "linear-gradient(red, red),".repeat(collisions.length).slice(0, -1));
         pattern.style.setProperty("background-position", bgpos.slice(0, -1));
-
-        row.append(header, pattern, delButton());
-        main.append(row);
       });
     </script>
     <details>
