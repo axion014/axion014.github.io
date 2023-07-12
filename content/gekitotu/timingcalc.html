@@ -64,7 +64,6 @@
         margin: 10px 0;
       }
       fieldset, legend { padding: 0; }
-      input[type=text] { width: 1.5em; }
       input[type=range] { vertical-align: middle; }
       button, input { margin-right: 5px; }
     </style>
@@ -118,8 +117,8 @@
     </select></label>
     <fieldset>
       <legend>激突のタイミングを計算する</legend>
-      <label>計算対象加速: <input type="text" id="subjectspeed" required pattern="\d|1[0-5]"></input></label>
-      <label>相手加速: <input type="text" id="objectspeed" required pattern="\d|1[0-5]"></input></label>
+      <label>計算対象加速: <input type="text" id="subjectspeed" required pattern="^(?!(?:(?:\d|1[0-5]),)*(\d|1[0-5])(?=,).*,\1(?:,|$))(?:\d|1[0-5])(?:,(?:\d|1[0-5]))*$" placeholder="0,1,2"></input></label>
+      <label>相手加速: <input type="text" id="objectspeed" required pattern="^(?!(?:(?:\d|1[0-5]),)*(\d|1[0-5])(?=,).*,\1(?:,|$))(?:\d|1[0-5])(?:,(?:\d|1[0-5]))*$" placeholder="0,1,2"></input></label>
       <button id="speedcalc">確定</button>
     </fieldset>
     <label>ズーム: <input type="range" id="zoom" min="-4" max="4"></input></label>
@@ -213,16 +212,31 @@
       let objectspeed = document.getElementById("objectspeed");
       let speedcalc = document.getElementById("speedcalc");
 
-      let checkValidity = () => speedcalc.disabled = !(subjectspeed.checkValidity() && objectspeed.checkValidity());
+      subjectspeed.setCustomValidity("0~15の数字を半角カンマ(,)区切りでスペースを入れずに入力してください");
+      objectspeed.setCustomValidity("0~15の数字を半角カンマ(,)区切りでスペースを入れずに入力してください");
+
+      function checkValidity() {
+        speedcalc.disabled = subjectspeed.validity.patternMismatch ||
+                             subjectspeed.validity.valueMissing ||
+                             objectspeed.validity.patternMismatch ||
+                             objectspeed.validity.valueMissing;
+      }
       checkValidity();
-      subjectspeed.addEventListener("input", checkValidity);
-      objectspeed.addEventListener("input", checkValidity);
-      speedcalc.addEventListener("click", () => {
-        let {row, pattern} = createRow(`${subjectspeed.value}速対${objectspeed.value}速`, "speedcalc");
+      subjectspeed.addEventListener("input", () => {
+        if (!subjectspeed.checkValidity()) subjectspeed.reportValidity();
+        checkValidity();
+      });
+      objectspeed.addEventListener("input", () => {
+        if (!objectspeed.checkValidity()) objectspeed.reportValidity();
+        checkValidity();
+      });
+
+      function addSpeedCalc(subjectspeed, objectspeed) {
+        let {row, pattern} = createRow(`${subjectspeed}速対${objectspeed}速`, "speedcalc");
 
         let collisions = [];
-        let ax1 = (Number.parseInt(subjectspeed.value) + 1) / 1000;
-        let ax2 = -(Number.parseInt(objectspeed.value) + 1) / 1000;
+        let ax1 = (subjectspeed + 1) / 1000;
+        let ax2 = -(objectspeed + 1) / 1000;
         let vx1 = 0, vx2 = 0;
         let x1 = 50, x2 = 1110;
         let rx1 = 50, rx2 = 1110;
@@ -250,6 +264,12 @@
         for (let collision of collisions) bgpos += `calc(var(--scale) * ${collision}px),`;
         pattern.style.setProperty("background-image", "linear-gradient(red, red),".repeat(collisions.length).slice(0, -1));
         pattern.style.setProperty("background-position", bgpos.slice(0, -1));
+      }
+
+      speedcalc.addEventListener("click", () => {
+        for (ss of subjectspeed.value.split(',').map(s => Number.parseInt(s))) {
+          for (os of objectspeed.value.split(',').map(s => Number.parseInt(s))) addSpeedCalc(ss, os);
+        }
       });
     </script>
     <details>
